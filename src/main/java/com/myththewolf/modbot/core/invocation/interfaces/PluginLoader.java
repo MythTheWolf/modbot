@@ -1,5 +1,7 @@
 package com.myththewolf.modbot.core.invocation.interfaces;
 
+import com.myththewolf.modbot.core.invocation.impl.BotPlugin;
+
 import java.io.File;
 
 /**
@@ -8,5 +10,5 @@ import java.io.File;
 public interface PluginLoader {
     void loadJarFile(File jar);
     void loadDirectory(File dir);
-    void clean();
+    void enablePlugin(BotPlugin plugin);
 }
