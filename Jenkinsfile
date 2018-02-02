@@ -27,7 +27,7 @@ pipeline {
       steps {
         archiveArtifacts 'target/*'
         
-        publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'target/site/apidocs', reportFiles: 'index.html', reportName: 'Javadoc', reportTitles: ''])
+        publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'target/site/apidocs', reportFiles: '*', reportName: 'Javadoc', reportTitles: ''])
 
         
       }
