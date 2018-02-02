@@ -2,9 +2,6 @@ package com.myththewolf.modbot.core.invocation.impl;
 
 import com.myththewolf.modbot.core.invocation.interfaces.PluginLoader;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -12,38 +9,29 @@ import java.util.HashMap;
 /**
  * Implementation of PluginLoader
  */
-public class ImplPluginLoader implements PluginLoader, Loggable{
+public class ImplPluginLoader implements PluginLoader, Loggable {
     /**
      * This map contains all loaded plugins, it is a hashmap so we can grab a plugin by it's name.
      */
     private HashMap<String, BotPlugin> plugins = new HashMap<>();
-    private final Logger systemlogger = LoggerFactory.getLogger(getClass());
-    /**
-     * This invokes @link{#loadAllClassesFor} given a plugin jar
-     *
-     * @param jar A file object pointing to a plugin JAR
-     */
+
     public void loadJarFile(File jar) {
         getLogger().debug("Adding " + jar.getAbsolutePath() + " to this classpath");
+        if(!jar.exists()){
+            getLogger().warn(jar.getAbsolutePath() + " does not exist, ignoring.");
+            return;
+        }
         loadAllClassesFor(jar);
     }
 
-    /**
-     * This will load all plugins given a directory by invoking @link{#loadJarFile}
-     *
-     * @param dir A file object pointing to a plugin directory
-     */
+
     public void loadDirectory(File dir) {
         Arrays.stream(dir.listFiles()).filter(file -> file.getName().endsWith(".jar")).forEach(jar -> {
             loadJarFile(jar);
         });
     }
 
-    /**
-     * This prepares the plugin's default config and file structure, and calls @link{BotPlugin#onEnable}
-     *
-     * @param plugin The plugin to enable
-     */
+
     public void enablePlugin(BotPlugin plugin) {
 
     }
@@ -67,8 +55,4 @@ public class ImplPluginLoader implements PluginLoader, Loggable{
         }
     }
 
-    @Override
-    public Logger getLogger() {
-        return this.systemlogger;
-    }
 }
