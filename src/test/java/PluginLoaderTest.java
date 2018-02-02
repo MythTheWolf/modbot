@@ -9,10 +9,10 @@ public class PluginLoaderTest {
     @Test
     public void testJarLoder() throws ClassNotFoundException {
         PluginLoader pl = new ImplPluginLoader();
-        pl.loadJarFile(new File("sampleplugin.jar"));
-        Class<?> clazz = Class.forName("com.myththewolf.sampleplugin.SamplePluginClass");
-        Arrays.stream(clazz.getMethods()).forEach(method -> {
-            System.out.println(method.getName());
-        });
+      //  pl.loadJarFile(new File("sampleplugin.jar"));
+      //  Class<?> clazz = Class.forName("com.myththewolf.sampleplugin.SamplePluginClass");
+     //   Arrays.stream(clazz.getMethods()).forEach(method -> {
+     //       System.out.println(method.getName());
+     //   });
     }
 }
