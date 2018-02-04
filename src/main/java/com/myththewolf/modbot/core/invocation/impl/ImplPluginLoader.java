@@ -2,9 +2,13 @@ package com.myththewolf.modbot.core.invocation.impl;
 
 import com.myththewolf.modbot.core.invocation.interfaces.PluginLoader;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
-import java.io.File;
+import org.json.JSONObject;
+
+import java.io.*;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Optional;
 
 /**
  * Implementation of PluginLoader
@@ -17,11 +21,38 @@ public class ImplPluginLoader implements PluginLoader, Loggable {
 
     public void loadJarFile(File jar) {
         getLogger().debug("Adding " + jar.getAbsolutePath() + " to this classpath");
-        if(!jar.exists()){
+        if (!jar.exists()) {
             getLogger().warn(jar.getAbsolutePath() + " does not exist, ignoring.");
             return;
         }
         loadAllClassesFor(jar);
+        JSONObject runconfig = null;
+        try {
+            runconfig = getResourceFromJar(jar, "runconfig.json").flatMap(this::inputStreamToString).map(JSONObject::new).orElseThrow(FileNotFoundException::new);
+            if (runconfig.isNull("main-class")) {
+                getLogger().warn("Error while enabling plugin: {}, key 'main-class' in runconfig.json is not optional.", jar.getAbsolutePath());
+                getLogger().debug("Runconfig JSON: {}", runconfig.toString());
+                return;
+            }
+            Class C = Class.forName(runconfig.getString("main-class"));
+            try {
+                Object instance = C.newInstance();
+                if (!(instance instanceof BotPlugin)) {
+                    getLogger().warn("Error while enabling plugin: {}, class '{}' does not extend BotPlugin", jar.getAbsolutePath(), C.getName());
+                    return;
+                }
+                ((BotPlugin) instance).onEnable();
+            } catch (InstantiationException | IllegalAccessException e) {
+                getLogger().error("Internal Exception while loading plugin: {}, ", jar.getAbsolutePath(), e);
+                return;
+            }
+
+        } catch (FileNotFoundException e) {
+            getLogger().warn("Error while enabling plugin: {}, runconfig.json was not found: ", jar.getAbsolutePath(), e);
+        } catch (ClassNotFoundException e) {
+            getLogger().warn("Error while enabling plugin: {}, class '{}' does not exist!", jar.getAbsolutePath(), runconfig.getString("main-class"));
+        }
+
     }
 
 
@@ -55,4 +86,29 @@ public class ImplPluginLoader implements PluginLoader, Loggable {
         }
     }
 
+    private Optional<InputStream> getResourceFromJar(File theJar, String pathInJar) {
+        InputStream is = null;
+        try {
+            URL url = new URL("jar:file:" + theJar.getAbsolutePath() + "!/" + pathInJar);
+            is = url.openStream();
+        } catch (IOException exception) {
+            getLogger().error("A internal error has occurred: {}", exception);
+        }
+        return Optional.ofNullable(is);
+    }
+
+    private Optional<String> inputStreamToString(InputStream source) {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(source));
+        String decoded = "";
+        String pivot;
+        try {
+            while ((pivot = reader.readLine()) != null) {
+                decoded += pivot;
+            }
+        } catch (IOException exception) {
+            getLogger().error("A internal error has occurred: {}", exception);
+            decoded = null;
+        }
+        return Optional.ofNullable(decoded);
+    }
 }
