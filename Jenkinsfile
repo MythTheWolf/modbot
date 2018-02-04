@@ -27,7 +27,7 @@ pipeline {
       steps {
         archiveArtifacts 'target/*'
         sh '''rm -rf /var/www/mythserver/doc/modbot/*
-cp target/site/apidocs/* /var/www/mythserver/doc/modbot/'''
+cp -r target/site/apidocs/* /var/www/mythserver/doc/modbot/'''
       }
     }
   }
