@@ -26,10 +26,8 @@ pipeline {
     stage('Publish') {
       steps {
         archiveArtifacts 'target/*'
-        
-        publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'target/site/apidocs', reportFiles: '*', reportName: 'Javadoc', reportTitles: ''])
-
-        
+        sh '''rm -rf /var/www/mythserver/doc/modbot/*
+cp target/site/apidocs/* /var/www/mythserver/doc/modbot/'''
       }
     }
   }
