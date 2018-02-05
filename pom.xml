@@ -7,8 +7,19 @@
     <groupId>com.myththewolf</groupId>
     <artifactId>modbot</artifactId>
     <version>1.0-SNAPSHOT</version>
-
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
     <dependencies>
+        <dependency>
+            <groupId>de.btobastian</groupId>
+            <artifactId>Javacord</artifactId>
+            <!-- See below what to insert here -->
+            <version>c718a5c</version>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/junit/junit -->
         <dependency>
             <groupId>junit</groupId>
