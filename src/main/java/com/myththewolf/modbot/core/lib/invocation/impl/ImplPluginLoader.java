@@ -37,12 +37,9 @@ public class ImplPluginLoader implements PluginLoader, Loggable {
                 return;
             }
             URLClassLoader PLUGIN_CLASS_LOADER = new PluginClassLoader(getClass().getClassLoader());
-            try {
-                ((PluginClassLoader) PLUGIN_CLASS_LOADER).addURL(getClass().getProtectionDomain().getCodeSource().getLocation().toURI().toURL());
+
                 ((PluginClassLoader) PLUGIN_CLASS_LOADER).loadJarFile(jar);
-            } catch (URISyntaxException | MalformedURLException e) {
-                getLogger().error("Exception: {}", e);
-            }
+
             Class<?> C = ((PluginClassLoader) PLUGIN_CLASS_LOADER).getClassByName(runconfig.getString("mainClass"));
             try {
                 Object instance = C.newInstance();
