@@ -6,6 +6,7 @@ import org.json.JSONObject;
 
 import java.io.*;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Optional;
@@ -25,22 +26,24 @@ public class ImplPluginLoader implements PluginLoader, Loggable {
             getLogger().warn(jar.getAbsolutePath() + " does not exist, ignoring.");
             return;
         }
-        loadAllClassesFor(jar);
         JSONObject runconfig = null;
         try {
             runconfig = getResourceFromJar(jar, "runconfig.json").flatMap(this::inputStreamToString).map(JSONObject::new).orElseThrow(FileNotFoundException::new);
             if (runconfig.isNull("main-class")) {
-                getLogger().warn("Error while enabling plugin: {}, key 'main-class' in runconfig.json is not optional.", jar.getAbsolutePath());
+                getLogger().warn("Error while enabling plugin: {}, key 'mainClass' in runconfig.json is not optional.", jar.getAbsolutePath());
                 getLogger().debug("Runconfig JSON: {}", runconfig.toString());
                 return;
             }
-            Class C = Class.forName(runconfig.getString("main-class"));
+            URLClassLoader PLUGIN_CLASS_LOADER = new PluginClassLoader(getClass().getClassLoader());
+            ((PluginClassLoader) PLUGIN_CLASS_LOADER).loadJarFile(jar);
+            Class<?> C = PLUGIN_CLASS_LOADER.getClass().forName(runconfig.getString("mainClass"));
             try {
                 Object instance = C.newInstance();
                 if (!(instance instanceof BotPlugin)) {
                     getLogger().warn("Error while enabling plugin: {}, class '{}' does not extend BotPlugin", jar.getAbsolutePath(), C.getName());
                     return;
                 }
+                ((BotPlugin) instance).initate(runconfig, PLUGIN_CLASS_LOADER);
                 ((BotPlugin) instance).onEnable();
             } catch (InstantiationException | IllegalAccessException e) {
                 getLogger().error("Internal Exception while loading plugin: {}, ", jar.getAbsolutePath(), e);
@@ -67,24 +70,6 @@ public class ImplPluginLoader implements PluginLoader, Loggable {
 
     }
 
-    private synchronized void loadAllClassesFor(File jar) {
-        try {
-            /*We are using reflection here to circumvent encapsulation; addURL is not public*/
-            java.net.URLClassLoader loader = (java.net.URLClassLoader) ClassLoader.getSystemClassLoader();
-            java.net.URL url = jar.toURI().toURL();
-            /*Disallow if already loaded*/
-            for (java.net.URL it : java.util.Arrays.asList(loader.getURLs())) {
-                if (it.equals(url)) {
-                    return;
-                }
-            }
-            java.lang.reflect.Method method = java.net.URLClassLoader.class.getDeclaredMethod("addURL", new Class[]{java.net.URL.class});
-            method.setAccessible(true); /*promote the method to public access*/
-            method.invoke(loader, new Object[]{url});
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     private Optional<InputStream> getResourceFromJar(File theJar, String pathInJar) {
         InputStream is = null;
