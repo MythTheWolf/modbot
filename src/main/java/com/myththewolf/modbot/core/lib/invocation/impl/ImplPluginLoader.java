@@ -1,5 +1,6 @@
 package com.myththewolf.modbot.core.lib.invocation.impl;
 
+import com.myththewolf.modbot.core.lib.Util;
 import com.myththewolf.modbot.core.lib.invocation.interfaces.PluginLoader;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
 import org.json.JSONObject;
@@ -35,7 +36,7 @@ public class ImplPluginLoader implements PluginLoader, Loggable {
         }
         JSONObject runconfig = null;
         try {
-            runconfig = getResourceFromJar(jar, "runconfig.json").flatMap(this::inputStreamToString).map(JSONObject::new).orElseThrow(FileNotFoundException::new);
+            runconfig = Util.getResourceFromJar(jar, "runconfig.json").flatMap(Util::inputStreamToString).map(JSONObject::new).orElseThrow(FileNotFoundException::new);
             if (runconfig.isNull("mainClass")) {
                 getLogger().warn("Error while enabling plugin: {}, key 'mainClass' in runconfig.json is not optional.", jar.getAbsolutePath());
                 return;
@@ -51,7 +52,7 @@ public class ImplPluginLoader implements PluginLoader, Loggable {
                 }
                 getLogger().info("Enabling plugin: {}", runconfig.getString("pluginName"));
                 Thread pluginThread = new Thread(() -> {
-                    JSONObject runconfigLamb = getResourceFromJar(jar, "runconfig.json").flatMap(this::inputStreamToString).map(JSONObject::new).get();
+                    JSONObject runconfigLamb = Util.getResourceFromJar(jar, "runconfig.json").flatMap(Util::inputStreamToString).map(JSONObject::new).get();
                     ((BotPlugin) instance).enablePlugin(runconfigLamb, pluginClassLoader);
                 });
                 pluginThread.setName(runconfig.getString("pluginName"));
@@ -79,42 +80,5 @@ public class ImplPluginLoader implements PluginLoader, Loggable {
         });
     }
 
-    /**
-     * Gets a InputStream sourced from a File inside a jar file
-     *
-     * @param theJar    The jar file to extract the resource from
-     * @param pathInJar The file inside the jar
-     * @return A Optional, empty if the resource doesn't exist.
-     */
-    private Optional<InputStream> getResourceFromJar(File theJar, String pathInJar) {
-        InputStream is = null;
-        try {
-            URL url = new URL("jar:file:" + theJar.getAbsolutePath() + "!/" + pathInJar);
-            is = url.openStream();
-        } catch (IOException exception) {
-            getLogger().error("A internal error has occurred: {}", exception);
-        }
-        return Optional.ofNullable(is);
-    }
 
-    /**
-     * Converts a InputStream to a String
-     *
-     * @param source The InputStream to convert
-     * @return A Optional, empty if the source is null.
-     */
-    private Optional<String> inputStreamToString(InputStream source) {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(source));
-        String decoded = "";
-        String pivot;
-        try {
-            while ((pivot = reader.readLine()) != null) {
-                decoded += pivot;
-            }
-        } catch (IOException exception) {
-            getLogger().error("A internal error has occurred: {}", exception);
-            decoded = null;
-        }
-        return Optional.ofNullable(decoded);
-    }
 }

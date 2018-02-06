@@ -1,10 +1,13 @@
 package com.myththewolf.modbot.core.lib.invocation.impl;
 
+import com.myththewolf.modbot.core.API.command.CommandExecutor;
 import com.myththewolf.modbot.core.lib.invocation.interfaces.PluginAdapater;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
+import de.btobastian.javacord.entities.permissions.Role;
 import org.json.JSONObject;
 
 import java.net.URLClassLoader;
+import java.util.HashMap;
 
 /**
  * This class represents a constructed BotPlugin <br />
@@ -36,9 +39,15 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
      */
     private boolean enabled = false;
     /**
+     * A mapping of Discord commands with their triggers.
+     */
+    private HashMap<String, CommandExecutor> pluginCommands = new HashMap<>();
+
+    /**
      * Sets up this BotPlugin, it is protected only to the system.
+     *
      * @param runconfig The runconfig of the plugin
-     * @param loader The class loader used to import the plugin JAR
+     * @param loader    The class loader used to import the plugin JAR
      * @throws IllegalStateException If any keys in the runconfig are null
      */
     protected void enablePlugin(JSONObject runconfig, URLClassLoader loader) throws IllegalStateException {
@@ -59,6 +68,7 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
         enabled = true;
         onEnable();
     }
+
     /**
      * Gets the description of this plugin set by runconfig.json
      *
@@ -109,5 +119,14 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
      */
     public URLClassLoader getClassLoader() {
         return classLoader;
+    }
+
+    /**
+     * Registers a command to this plugin
+     * @param trigger The string literal to trigger this command
+     * @param executor The executor to invoke upon the command trigger
+     */
+    public void registerCommand(String trigger, CommandExecutor executor) {
+        this.pluginCommands.put(trigger, executor);
     }
 }
