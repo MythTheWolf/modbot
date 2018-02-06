@@ -2,6 +2,9 @@ package com.myththewolf.modbot.core;
 
 import com.myththewolf.modbot.core.lib.Util;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
+import de.btobastian.javacord.AccountType;
+import de.btobastian.javacord.DiscordApiBuilder;
+import de.btobastian.javacord.Javacord;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -50,7 +53,17 @@ public class ModBotCoreLoader implements Loggable {
             }
         }
         try {
+            getLogger().info("Reading configuration");
             JSONObject theDealio = Util.readFile(systemconfig).map(JSONObject::new).orElseThrow(() -> new JSONException("Input was empty"));
+            getLogger().info("Starting discord bot");
+            try {
+                new DiscordApiBuilder().setAccountType(AccountType.BOT).setToken(theDealio.getString("botToken")).login().thenAccept(discordApi -> {
+                    getLogger().info("Logged in!");
+                }).join();
+            }catch (Exception e){
+                getLogger().error("Login failed");
+            }
+            getLogger().info("Loading plugins");
         } catch (JSONException exception) {
             getLogger().error("Could not read JSON configuration: {}", exception.getMessage());
         }
