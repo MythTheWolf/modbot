@@ -8,6 +8,9 @@ import java.io.*;
 import java.net.URL;
 import java.util.Optional;
 
+/**
+ * Utils Class, contains random Utilities that will be used more than once
+ */
 public class Util {
     /**
      * Converts a InputStream to a String
@@ -68,7 +71,7 @@ public class Util {
      * @param source The file to read
      * @return A optional, empty if the file does not exist or is not readable.
      */
-    public Optional<String> readFile(File source) {
+    public static Optional<String> readFile(File source) {
         String line = null;
         String fin = "";
         try {
