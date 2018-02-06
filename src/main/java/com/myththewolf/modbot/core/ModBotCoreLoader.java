@@ -3,7 +3,6 @@ package com.myththewolf.modbot.core;
 import com.myththewolf.modbot.core.lib.Util;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
