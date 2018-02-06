@@ -1,13 +1,18 @@
 package com.myththewolf.modbot.core.lib.invocation.impl;
 
 import com.myththewolf.modbot.core.API.command.CommandExecutor;
+import com.myththewolf.modbot.core.API.command.DiscordCommand;
 import com.myththewolf.modbot.core.lib.invocation.interfaces.PluginAdapater;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
 import de.btobastian.javacord.entities.permissions.Role;
 import org.json.JSONObject;
 
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 /**
  * This class represents a constructed BotPlugin <br />
@@ -41,7 +46,7 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
     /**
      * A mapping of Discord commands with their triggers.
      */
-    private HashMap<String, CommandExecutor> pluginCommands = new HashMap<>();
+    private HashMap<String, DiscordCommand> pluginCommands = new HashMap<>();
 
     /**
      * Sets up this BotPlugin, it is protected only to the system.
@@ -123,10 +128,19 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
 
     /**
      * Registers a command to this plugin
-     * @param trigger The string literal to trigger this command
+     *
+     * @param trigger  The string literal to trigger this command
      * @param executor The executor to invoke upon the command trigger
      */
     public void registerCommand(String trigger, CommandExecutor executor) {
-        this.pluginCommands.put(trigger, executor);
+        this.pluginCommands.put(trigger, new DiscordCommand(executor, trigger));
+    }
+
+    /**
+     * Gets all commands of this plugin
+     * @return The list of commands
+     */
+    public List<DiscordCommand> getCommands() {
+        return new ArrayList<>(this.pluginCommands.values());
     }
 }

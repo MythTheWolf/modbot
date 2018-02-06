@@ -1,23 +1,21 @@
 package com.myththewolf.modbot.core.lib.invocation.impl;
 
 import com.myththewolf.modbot.core.lib.Util;
-import com.myththewolf.modbot.core.lib.invocation.interfaces.PluginLoader;
+import com.myththewolf.modbot.core.lib.invocation.interfaces.PluginManager;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Optional;
+import java.util.List;
 
 /**
- * Implementation of PluginLoader
+ * Implementation of PluginManager
  */
-public class ImplPluginLoader implements PluginLoader, Loggable {
+public class ImplPluginLoader implements PluginManager, Loggable {
     /**
      * This map contains all loaded plugins, it is a hashmap so we can grab a plugin by it's name.
      */
@@ -34,7 +32,7 @@ public class ImplPluginLoader implements PluginLoader, Loggable {
             getLogger().warn(jar.getAbsolutePath() + " does not exist, ignoring.");
             return;
         }
-        JSONObject runconfig = null;
+        JSONObject runconfig;
         try {
             runconfig = Util.getResourceFromJar(jar, "runconfig.json").flatMap(Util::inputStreamToString).map(JSONObject::new).orElseThrow(FileNotFoundException::new);
             if (runconfig.isNull("mainClass")) {
@@ -52,7 +50,7 @@ public class ImplPluginLoader implements PluginLoader, Loggable {
                 }
                 getLogger().info("Enabling plugin: {}", runconfig.getString("pluginName"));
                 Thread pluginThread = new Thread(() -> {
-                    JSONObject runconfigLamb = Util.getResourceFromJar(jar, "runconfig.json").flatMap(Util::inputStreamToString).map(JSONObject::new).get();
+                    JSONObject runconfigLamb = Util.getResourceFromJar(jar, "runconfig.json").flatMap(Util::inputStreamToString).map(JSONObject::new).orElseGet(JSONObject::new);
                     ((BotPlugin) instance).enablePlugin(runconfigLamb, pluginClassLoader);
                 });
                 pluginThread.setName(runconfig.getString("pluginName"));
@@ -75,10 +73,11 @@ public class ImplPluginLoader implements PluginLoader, Loggable {
      * @param dir A file object pointing to a plugin directory
      */
     public void loadDirectory(File dir) {
-        Arrays.stream(dir.listFiles()).filter(file -> file.getName().endsWith(".jar")).forEach(jar -> {
-            loadJarFile(jar);
-        });
+        Arrays.stream(dir.listFiles()).filter(file -> file.getName().endsWith(".jar")).forEach(this::loadJarFile);
     }
 
-
+    @Override
+    public List<BotPlugin> getPlugins() {
+        return new ArrayList<>(plugins.values());
+    }
 }
