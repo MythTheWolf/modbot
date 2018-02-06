@@ -3,6 +3,7 @@ package com.myththewolf.modbot.core;
 import com.myththewolf.modbot.core.lib.Util;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,7 +50,7 @@ public class ModBotCoreLoader implements Loggable {
             }
         }
         try {
-
+            JSONObject theDealio = Util.readFile(systemconfig).map(JSONObject::new).orElseThrow(() -> new JSONException("Input was empty"));
         } catch (JSONException exception) {
             getLogger().error("Could not read JSON configuration: {}", exception.getMessage());
         }
