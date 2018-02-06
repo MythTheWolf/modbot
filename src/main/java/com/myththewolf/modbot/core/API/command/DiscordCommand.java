@@ -1,6 +1,7 @@
 package com.myththewolf.modbot.core.API.command;
 
 
+import com.myththewolf.modbot.core.lib.invocation.impl.BotPlugin;
 import de.btobastian.javacord.entities.channels.TextChannel;
 import de.btobastian.javacord.entities.message.Message;
 import de.btobastian.javacord.entities.message.MessageAuthor;
@@ -17,19 +18,26 @@ public class DiscordCommand {
      * The executor to be ran when this command is triggered
      */
     private CommandExecutor executor;
+    /**
+     * The plugin that registred this command
+     */
+    private BotPlugin parent;
 
     /**
      * Constructs a new DiscordCommand
+     *
      * @param executor The executor to be ran when this command is triggered
-     * @param trigger The literal command String to map to this command
+     * @param trigger  The literal command String to map to this command
      */
-    public DiscordCommand(CommandExecutor executor, String trigger) {
+    public DiscordCommand(BotPlugin plugin, CommandExecutor executor, String trigger) {
         this.trigger = trigger;
         this.executor = executor;
+        this.parent = plugin;
     }
 
     /**
      * Gets the command trigger string
+     *
      * @return The literal command string
      */
     public String getTrigger() {
@@ -38,6 +46,7 @@ public class DiscordCommand {
 
     /**
      * Gets this command's executor
+     *
      * @return The executor
      */
     public CommandExecutor getExecutor() {
@@ -46,13 +55,18 @@ public class DiscordCommand {
 
     /**
      * Runs this command
+     *
      * @param channel The TextChannel where the command was ran from
-     * @param user The user who ran the command
-     * @param source The message that triggered the command
+     * @param user    The user who ran the command
+     * @param source  The message that triggered the command
      */
     public void invokeCommand(TextChannel channel, MessageAuthor user, Message source) {
         String[] args = source.getContent().substring(getTrigger().length(), source.getContent().length()).split(" ");
         getExecutor().update(channel, user);
         getExecutor().onCommand(channel, user, args, source);
+    }
+
+    public BotPlugin getParentPlugin() {
+        return parent;
     }
 }

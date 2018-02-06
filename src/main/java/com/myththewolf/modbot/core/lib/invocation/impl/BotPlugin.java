@@ -130,11 +130,12 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
      * @param executor The executor to invoke upon the command trigger
      */
     public void registerCommand(String trigger, CommandExecutor executor) {
-        this.pluginCommands.put(trigger, new DiscordCommand(executor, trigger));
+        this.pluginCommands.put(trigger, new DiscordCommand(this, executor, trigger));
     }
 
     /**
      * Gets all commands of this plugin
+     *
      * @return The list of commands
      */
     public List<DiscordCommand> getCommands() {

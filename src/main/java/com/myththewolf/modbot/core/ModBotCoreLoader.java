@@ -71,7 +71,6 @@ public class ModBotCoreLoader implements Loggable {
                 System.exit(0);
                 return;
             }
-            getLogger().info("Loading plugins");
         } catch (JSONException exception) {
             getLogger().error("Could not read JSON configuration: {}", exception.getMessage());
         }
