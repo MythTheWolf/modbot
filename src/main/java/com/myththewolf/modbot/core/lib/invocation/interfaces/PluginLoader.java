@@ -21,11 +21,4 @@ public interface PluginLoader {
      * @param dir A file object pointing to a plugin directory
      */
     void loadDirectory(File dir);
-
-    /**
-     * This prepares the plugin's default config and file structure, and calls @link{BotPlugin#onEnable}
-     *
-     * @param plugin The plugin to enable
-     */
-    void enablePlugin(BotPlugin plugin);
 }

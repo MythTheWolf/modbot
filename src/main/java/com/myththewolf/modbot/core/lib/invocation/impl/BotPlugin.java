@@ -31,19 +31,22 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
      * The URLClassLoader used to load the JAR into the runtime
      */
     private URLClassLoader classLoader;
-
+    /**
+     * Boolean value of if this plugin is enabled
+     */
+    private boolean enabled = false;
     /**
      * Sets up this BotPlugin, it is protected only to the system.
      * @param runconfig The runconfig of the plugin
      * @param loader The class loader used to import the plugin JAR
      * @throws IllegalStateException If any keys in the runconfig are null
      */
-    protected void initate(JSONObject runconfig, URLClassLoader loader) throws IllegalStateException {
+    protected void enablePlugin(JSONObject runconfig, URLClassLoader loader) throws IllegalStateException {
         this.runconfig = runconfig;
         if (runconfig.isNull("pluginName")) {
             throw new IllegalStateException("pluginName is NULL");
         }
-        this.pluginName = runconfig.getString("plugin-name");
+        this.pluginName = runconfig.getString("pluginName");
         if (runconfig.isNull("pluginVersion")) {
             throw new IllegalStateException("pluginVersion is NULL");
         }
@@ -53,7 +56,8 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
         }
         this.pluginDescription = runconfig.getString("pluginDescription");
         this.classLoader = loader;
-
+        enabled = true;
+        onEnable();
     }
     /**
      * Gets the description of this plugin set by runconfig.json

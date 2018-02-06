@@ -23,11 +23,8 @@ public class PluginClassLoader extends URLClassLoader implements Loggable {
     public void loadJarFile(File jar) {
         try {
             addURL(jar.toURI().toURL());
-            for (URL u : getURLs()) {
-                getLogger().info(u.toString());
-            }
         } catch (MalformedURLException exception) {
-            exception.printStackTrace();
+            getLogger().error("Error while importing jar file from PluginClassLoader: {}", exception);
         }
     }
 
@@ -35,8 +32,8 @@ public class PluginClassLoader extends URLClassLoader implements Loggable {
 
         try {
             return loadClass(clazz);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+        } catch (ClassNotFoundException exception) {
+            getLogger().error("Error while importing jar file from PluginClassLoader: {}", exception);
         }
         return null;
     }
