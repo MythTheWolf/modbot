@@ -4,15 +4,12 @@ import com.myththewolf.modbot.core.API.command.CommandExecutor;
 import com.myththewolf.modbot.core.API.command.DiscordCommand;
 import com.myththewolf.modbot.core.lib.invocation.interfaces.PluginAdapater;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
-import de.btobastian.javacord.entities.permissions.Role;
 import org.json.JSONObject;
 
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 /**
  * This class represents a constructed BotPlugin <br />

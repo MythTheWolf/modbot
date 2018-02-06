@@ -3,6 +3,8 @@ package com.myththewolf.modbot.core;
 
 import com.myththewolf.modbot.core.lib.Util;
 import com.myththewolf.modbot.core.lib.command.CommandListener;
+import com.myththewolf.modbot.core.lib.invocation.impl.ImplPluginLoader;
+import com.myththewolf.modbot.core.lib.invocation.interfaces.PluginManager;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
 import de.btobastian.javacord.AccountType;
 import de.btobastian.javacord.DiscordApi;
@@ -59,10 +61,15 @@ public class ModBotCoreLoader implements Loggable {
             JSONObject theDealio = Util.readFile(systemconfig).map(JSONObject::new).orElseThrow(() -> new JSONException("Input was empty"));
             getLogger().info("Starting discord bot");
             try {
-                DiscordApi discordApi =  new DiscordApiBuilder().setAccountType(AccountType.BOT).setToken(theDealio.getString("botToken")).login().get();
-                discordApi.addMessageCreateListener(new CommandListener());
+                DiscordApi discordApi = new DiscordApiBuilder().setAccountType(AccountType.BOT).setToken(theDealio.getString("botToken")).login().get();
+                getLogger().info("Logged in. Loading plugins.");
+                PluginManager PM = new ImplPluginLoader();
+                PM.loadDirectory(plugins);
+                discordApi.addMessageCreateListener(new CommandListener(PM));
             } catch (Exception e) {
-                getLogger().error("Login failed");
+                getLogger().error("Login failed. Exiting.");
+                System.exit(0);
+                return;
             }
             getLogger().info("Loading plugins");
         } catch (JSONException exception) {

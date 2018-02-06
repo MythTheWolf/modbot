@@ -1,21 +1,107 @@
 package com.myththewolf.modbot.core.API.command;
 
-
-import de.btobastian.javacord.entities.User;
-import de.btobastian.javacord.entities.channels.ServerTextChannel;
-import de.btobastian.javacord.entities.message.Message;
+import de.btobastian.javacord.Javacord;
+import de.btobastian.javacord.entities.channels.TextChannel;
+import de.btobastian.javacord.entities.message.MessageAuthor;
+import de.btobastian.javacord.entities.message.embed.EmbedBuilder;
 
 /**
- * The interface in which command classes should implement
+ * CommandExecutor class to be extended to plugins
+ * This class is abstract so we can package helper methods, yet the onCommand can be handled by the plugin dev
  */
-public interface CommandExecutor {
+public abstract class CommandExecutor implements CommandAdapater {
     /**
-     * Runs when the command registered to this class is triggered from a readable text channel
-     *
-     * @param sourceChannel The TextChannel in which the command was ran in
-     * @param sender        The user who had ran this command
-     * @param args          A array of Strings that denotes arguments. This is taken by splitting the initial messages by spaces, but removing the first index, as the first index is the command itself.
-     * @param source        The original Message,unmodified, in which triggered this command.
+     * The TextChannel from the last command ran
      */
-    public void onCommand(ServerTextChannel sourceChannel, User sender, String[] args, Message source);
+    private TextChannel lastTextChannel;
+    /**
+     * The MessageAuthor from the last command ran
+     */
+    private MessageAuthor lastAuthor;
+
+    /**
+     * Updates the cache so when a command is ran, the helper methods work to the latest
+     *
+     * @param newTextChannel   The new text channel from the command
+     * @param newMessageAuthor The new message author from the command
+     */
+    public void update(TextChannel newTextChannel, MessageAuthor newMessageAuthor) {
+        this.lastTextChannel = newTextChannel;
+        this.lastAuthor = newMessageAuthor;
+    }
+
+    /**
+     * Sends the specified message to the channel in which the command was sent
+     *
+     * @param content The message to be sent
+     */
+    public void reply(String content) {
+        lastTextChannel.sendMessage(content).exceptionally(Javacord::exceptionLogger);
+    }
+
+    /**
+     * Sends the specified messasage embed to the channel in which the command was sent
+     *
+     * @param embedBuilder The message embed to be sent
+     */
+    public void reply(EmbedBuilder embedBuilder) {
+    }
+
+    /**
+     * Sends a friendly message embed that gives a "success" look with the specified message
+     *
+     * @param content The message to send within the embed.
+     */
+    public void succeded(String content) {
+    }
+
+    /**
+     * Sends a friendly message embed that gives a "success" look with the specified message
+     *
+     * @param content The message to send within the embed.
+     * @param footer  The footer to bind to the embed
+     * @param title   The title to bind to the embed
+     */
+    public void succeded(String content, String footer, String title) {
+    }
+
+    /**
+     * Sends a red "failed" message embed with a specified message
+     *
+     * @param content
+     */
+    public void failed(String content) {
+    }
+
+    /**
+     * Sends a red "failed" message embed with the specified message
+     *
+     * @param content The message to send within the embed.
+     * @param footer  The footer to bind to the embed
+     * @param title   The title to bind to the embed
+     */
+    public void failed(String content, String footer, String title) {
+    }
+
+    /**
+     * Deletes the message that triggered this command.
+     */
+    public void deleteTriggerMessage() {
+    }
+
+    /**
+     * Gets the last known User who ran this command
+     * @return The user
+     */
+    public MessageAuthor getLastAuthor() {
+        return lastAuthor;
+    }
+
+    /**
+     * Gets the last known TextChannel in which this command was ran from
+     * @return
+     */
+    public TextChannel getLastTextChannel() {
+        return lastTextChannel;
+    }
 }
