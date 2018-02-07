@@ -5,6 +5,8 @@ import de.btobastian.javacord.entities.channels.TextChannel;
 import de.btobastian.javacord.entities.message.MessageAuthor;
 import de.btobastian.javacord.entities.message.embed.EmbedBuilder;
 
+import java.awt.*;
+
 /**
  * CommandExecutor class to be extended to plugins
  * This class is abstract so we can package helper methods, yet the onCommand can be handled by the plugin dev
@@ -36,7 +38,7 @@ public abstract class CommandExecutor implements CommandAdapater {
      * @param content The message to be sent
      */
     public void reply(String content) {
-        lastTextChannel.sendMessage(content).exceptionally(Javacord::exceptionLogger);
+        getLastTextChannel().sendMessage(content).exceptionally(Javacord::exceptionLogger);
     }
 
     /**
@@ -45,6 +47,7 @@ public abstract class CommandExecutor implements CommandAdapater {
      * @param embedBuilder The message embed to be sent
      */
     public void reply(EmbedBuilder embedBuilder) {
+        getLastTextChannel().sendMessage(embedBuilder);
     }
 
     /**
@@ -52,7 +55,8 @@ public abstract class CommandExecutor implements CommandAdapater {
      *
      * @param content The message to send within the embed.
      */
-    public void succeded(String content) {
+    public void succeeded(String content) {
+        succeeded(content,"The command completed successfully","Success");
     }
 
     /**
@@ -62,7 +66,12 @@ public abstract class CommandExecutor implements CommandAdapater {
      * @param footer  The footer to bind to the embed
      * @param title   The title to bind to the embed
      */
-    public void succeded(String content, String footer, String title) {
+    public void succeeded(String content, String footer, String title) {
+        EmbedBuilder succ = new EmbedBuilder();
+        succ.setColor(Color.GREEN);
+        succ.setTitle(title);
+        succ.setFooter(footer);
+        succ.setDescription(content);
     }
 
     /**
@@ -91,6 +100,7 @@ public abstract class CommandExecutor implements CommandAdapater {
 
     /**
      * Gets the last known User who ran this command
+     *
      * @return The user
      */
     public MessageAuthor getLastAuthor() {
@@ -99,6 +109,7 @@ public abstract class CommandExecutor implements CommandAdapater {
 
     /**
      * Gets the last known TextChannel in which this command was ran from
+     *
      * @return
      */
     public TextChannel getLastTextChannel() {
