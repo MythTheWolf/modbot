@@ -19,7 +19,7 @@ public class DiscordCommand {
      */
     private CommandExecutor executor;
     /**
-     * The plugin that registred this command
+     * The plugin that registered this command
      */
     private BotPlugin parent;
 
@@ -66,6 +66,11 @@ public class DiscordCommand {
         getExecutor().onCommand(channel, user, args, source);
     }
 
+    /**
+     * Returns the plugin that this command is registered to
+     *
+     * @return The plugin
+     */
     public BotPlugin getParentPlugin() {
         return parent;
     }
