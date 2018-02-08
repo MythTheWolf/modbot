@@ -6,11 +6,13 @@ import com.myththewolf.modbot.core.lib.command.CommandListener;
 import com.myththewolf.modbot.core.lib.invocation.impl.ImplPluginLoader;
 import com.myththewolf.modbot.core.lib.invocation.interfaces.PluginManager;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
+import com.myththewolf.modbot.core.systemPlugin.commands.info;
 import de.btobastian.javacord.AccountType;
 import de.btobastian.javacord.DiscordApi;
 import de.btobastian.javacord.DiscordApiBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,6 +22,8 @@ import java.security.InvalidParameterException;
  * This class is the core of everything, starting all the sub-processes
  */
 public class ModBotCoreLoader implements Loggable {
+    public static Logger SYSTEM_LOGGER;
+
     /**
      * The main method, starts everything
      *
@@ -31,6 +35,7 @@ public class ModBotCoreLoader implements Loggable {
     }
 
     public void start() {
+        SYSTEM_LOGGER = getLogger();
         Thread.currentThread().setName("System");
         File current = new File(System.getProperty("user.dir") + File.separator + "run");
         File plugins = new File(current.getAbsolutePath() + File.separator + "plugins");
@@ -65,6 +70,8 @@ public class ModBotCoreLoader implements Loggable {
                 getLogger().info("Logged in. Loading plugins.");
                 PluginManager PM = new ImplPluginLoader();
                 PM.loadDirectory(plugins);
+                getLogger().info("Registering System commands");
+                ((ImplPluginLoader) PM).registerSystemCommand("~info", new info(PM));
                 discordApi.addMessageCreateListener(new CommandListener(PM));
             } catch (Exception e) {
                 getLogger().error("Login failed. Exiting.");

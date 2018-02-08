@@ -2,14 +2,16 @@ package com.myththewolf.modbot.core.API.command;
 
 
 import com.myththewolf.modbot.core.lib.invocation.impl.BotPlugin;
+import com.myththewolf.modbot.core.lib.logging.Loggable;
 import de.btobastian.javacord.entities.channels.TextChannel;
 import de.btobastian.javacord.entities.message.Message;
 import de.btobastian.javacord.entities.message.MessageAuthor;
+import sun.rmi.runtime.Log;
 
 /**
  * This class represents a CommandExecutor container for easy control
  */
-public class DiscordCommand {
+public class DiscordCommand implements Loggable {
     /**
      * The literal command String
      */
@@ -61,9 +63,14 @@ public class DiscordCommand {
      * @param source  The message that triggered the command
      */
     public void invokeCommand(TextChannel channel, MessageAuthor user, Message source) {
-        String[] args = source.getContent().substring(getTrigger().length(), source.getContent().length()).split(" ");
-        getExecutor().update(channel, user);
-        getExecutor().onCommand(channel, user, args, source);
+        Thread commandThread = new Thread(() -> {
+            String[] args = source.getContent().substring(getTrigger().length(), source.getContent().length()).split(" ");
+            getExecutor().update(channel, user);
+            getExecutor().onCommand(channel, user, args, source);
+            getLogger().info("{} ran a command: {}", user.getName(), getTrigger());
+        });
+        commandThread.setName(getParentPlugin().getPluginName());
+        commandThread.start();
     }
 
     /**

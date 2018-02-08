@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.myththewolf.modbot.core.lib.Util;
 import com.myththewolf.modbot.core.lib.invocation.interfaces.PluginManager;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
+import com.myththewolf.modbot.core.systemPlugin.SystemCommand;
 import org.json.JSONObject;
 
 import java.io.*;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of PluginManager
@@ -21,6 +23,10 @@ public class ImplPluginLoader implements PluginManager, Loggable {
      * This map contains all loaded plugins, it is a hashmap so we can grab a plugin by it's name.
      */
     private HashMap<String, BotPlugin> plugins = new HashMap<>();
+    /**
+     * This map contains all system commands.
+     */
+    private HashMap<String, SystemCommand> systemCommands = new HashMap<>();
 
     /**
      * Loads a plugin given a JAR file, and enables it.
@@ -82,13 +88,21 @@ public class ImplPluginLoader implements PluginManager, Loggable {
         return new ArrayList<>(plugins.values());
     }
 
-    public void addRawPlugin(JSONObject runconfig,BotPlugin instance){
-        getLogger().info("Enabling plugin: {} by using a unregistered class loader", runconfig.getString("pluginName"));
-        Thread pluginThread = new Thread(() -> {
-            ((BotPlugin) instance).enablePlugin(runconfig,null);
-        });
-        pluginThread.setName(runconfig.getString("pluginName"));
-        pluginThread.start();
-        this.plugins.put(((BotPlugin) instance).getPluginName(), ((BotPlugin) instance));
+    /**
+     * Registers a system command
+     *
+     * @param trigger The literal command string
+     * @param cmd The executor
+     */
+    public void registerSystemCommand(String trigger, SystemCommand cmd) {
+        systemCommands.put(trigger, cmd);
+    }
+
+    /**
+     * Gets all system commands
+     * @return A list of system commands
+     */
+    public HashMap<String, SystemCommand> getSystemCommands() {
+        return systemCommands;
     }
 }
