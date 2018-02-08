@@ -1,11 +1,16 @@
-package com.myththewolf.modbot.core.API.command;
+package com.myththewolf.modbot.core.API.command.interfaces;
 
+
+import com.myththewolf.modbot.core.lib.invocation.impl.BotPlugin;
 import de.btobastian.javacord.Javacord;
 import de.btobastian.javacord.entities.channels.TextChannel;
+import de.btobastian.javacord.entities.message.Message;
 import de.btobastian.javacord.entities.message.MessageAuthor;
 import de.btobastian.javacord.entities.message.embed.EmbedBuilder;
 
 import java.awt.*;
+import java.util.Optional;
+
 
 /**
  * CommandExecutor class to be extended to plugins
@@ -17,19 +22,23 @@ public abstract class CommandExecutor implements CommandAdapater {
      */
     private TextChannel lastTextChannel;
     /**
-     * The MessageAuthor from the last command ran
+     * The Message from the last command ran
      */
-    private MessageAuthor lastAuthor;
-
+    private Message lastMessage;
+    /**
+     * The plugin this command is registered
+     */
+    private BotPlugin plugin;
     /**
      * Updates the cache so when a command is ran, the helper methods work to the latest
      *
      * @param newTextChannel   The new text channel from the command
-     * @param newMessageAuthor The new message author from the command
+     * @param source The command message source
      */
-    public void update(TextChannel newTextChannel, MessageAuthor newMessageAuthor) {
+    public void update(BotPlugin plugin,TextChannel newTextChannel, Message source) {
         this.lastTextChannel = newTextChannel;
-        this.lastAuthor = newMessageAuthor;
+        this.lastMessage = source;
+        this.plugin = plugin;
     }
 
     /**
@@ -96,15 +105,24 @@ public abstract class CommandExecutor implements CommandAdapater {
      * Deletes the message that triggered this command.
      */
     public void deleteTriggerMessage() {
+        getLastMessage().delete().exceptionally(Javacord::exceptionLogger);
+    }
+
+    /**
+     * Gets the last known message of this command run
+     * @return The message
+     */
+    public Message getLastMessage() {
+        return lastMessage;
     }
 
     /**
      * Gets the last known User who ran this command
      *
-     * @return The user
+     * @return Optional, as the message may be deleted
      */
-    public MessageAuthor getLastAuthor() {
-        return lastAuthor;
+    public Optional<MessageAuthor> getLastAuthor() {
+        return Optional.ofNullable(getLastMessage() != null ? getLastMessage().getAuthor() : null);
     }
 
     /**
@@ -114,5 +132,13 @@ public abstract class CommandExecutor implements CommandAdapater {
      */
     public TextChannel getLastTextChannel() {
         return lastTextChannel;
+    }
+
+    /**
+     * Gets the plugin instance of this command
+     * @return The plugin
+     */
+    public BotPlugin getPlugin() {
+        return plugin;
     }
 }

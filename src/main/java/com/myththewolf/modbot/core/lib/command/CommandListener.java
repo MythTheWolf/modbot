@@ -1,6 +1,6 @@
 package com.myththewolf.modbot.core.lib.command;
 
-import com.myththewolf.modbot.core.API.command.DiscordCommand;
+import com.myththewolf.modbot.core.API.command.impl.DiscordCommand;
 import com.myththewolf.modbot.core.lib.invocation.impl.BotPlugin;
 import com.myththewolf.modbot.core.lib.invocation.impl.ImplPluginLoader;
 import com.myththewolf.modbot.core.lib.invocation.interfaces.PluginManager;

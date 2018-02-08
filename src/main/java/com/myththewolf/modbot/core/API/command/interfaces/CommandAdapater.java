@@ -1,4 +1,4 @@
-package com.myththewolf.modbot.core.API.command;
+package com.myththewolf.modbot.core.API.command.interfaces;
 
 
 import de.btobastian.javacord.entities.channels.TextChannel;
