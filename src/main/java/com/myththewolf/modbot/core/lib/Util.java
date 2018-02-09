@@ -105,4 +105,18 @@ public class Util {
             getLogger().error("Internal error in Utils class: Could not write to file! \n File: {} \n Content: {}", (out != null ? out.getAbsolutePath() : null), content);
         }
     }
+
+    /**
+     * Combines a array to a single string sentence
+     * @param startIndex Where to start from in the array
+     * @param array The array
+     * @return The newly formed string
+     */
+    public static String arrayToString(int startIndex,String[] array){
+        String finalStr = "";
+        for(int i=startIndex; i<array.length; i++){
+            finalStr += array[i];
+        }
+        return finalStr;
+    }
 }
