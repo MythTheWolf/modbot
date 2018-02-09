@@ -17,12 +17,14 @@ import org.slf4j.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.security.InvalidParameterException;
+import java.util.Arrays;
 
 /**
  * This class is the core of everything, starting all the sub-processes
  */
 public class ModBotCoreLoader implements Loggable {
     public static Logger SYSTEM_LOGGER;
+    private static boolean withoutBot;
 
     /**
      * The main method, starts everything
@@ -30,6 +32,7 @@ public class ModBotCoreLoader implements Loggable {
      * @param args Any args to pass to the system (Not currently used)
      */
     public static void main(String[] args) {
+        withoutBot = Arrays.asList(args).contains("--nobot");
         ModBotCoreLoader MBCL = new ModBotCoreLoader();
         MBCL.start();
     }
@@ -64,12 +67,22 @@ public class ModBotCoreLoader implements Loggable {
         try {
             getLogger().info("Reading configuration");
             JSONObject theDealio = Util.readFile(systemconfig).map(JSONObject::new).orElseThrow(() -> new JSONException("Input was empty"));
-            getLogger().info("Starting discord bot");
+
+
             try {
-                DiscordApi discordApi = new DiscordApiBuilder().setAccountType(AccountType.BOT).setToken(theDealio.getString("botToken")).login().get();
-                getLogger().info("Logged in. Loading plugins.");
+                DiscordApi discordApi = null;
+                if (!ModBotCoreLoader.withoutBot) {
+                    getLogger().info("Starting discord bot");
+                    discordApi = new DiscordApiBuilder().setAccountType(AccountType.BOT).setToken(theDealio.getString("botToken")).login().get();
+                    getLogger().info("Logged in. Loading plugins.");
+                } else {
+                    getLogger().debug("Loading plugins without bot");
+                }
                 PluginManager PM = new ImplPluginLoader();
                 PM.loadDirectory(plugins);
+                if (ModBotCoreLoader.withoutBot) {
+                    return;
+                }
                 getLogger().info("Registering System commands");
                 ((ImplPluginLoader) PM).registerSystemCommand("~info", new info(PM));
                 discordApi.addMessageCreateListener(new CommandListener(PM));
