@@ -92,8 +92,9 @@ public class Util {
 
     /**
      * Writes a given string to file
+     *
      * @param content The string to write
-     * @param out The file to write out to.
+     * @param out     The file to write out to.
      */
     public static void writeToFile(String content, File out) {
         try {

@@ -1,19 +1,18 @@
 package com.myththewolf.modbot.core.lib.invocation.impl;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
 import com.myththewolf.modbot.core.lib.Util;
 import com.myththewolf.modbot.core.lib.invocation.interfaces.PluginManager;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
 import com.myththewolf.modbot.core.systemPlugin.SystemCommand;
 import org.json.JSONObject;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Implementation of PluginManager
@@ -55,6 +54,26 @@ public class ImplPluginLoader implements PluginManager, Loggable {
                     getLogger().warn("Error while enabling plugin: {}, class '{}' does not extend BotPlugin", jar.getAbsolutePath(), C.getName());
                     return;
                 }
+                if (!((BotPlugin) instance).getDataFolder().isPresent()) {
+                    getLogger().debug("Data folder for plugin '{}' doesn't exist. Making one now.", ((BotPlugin) instance).getPluginName());
+                    File conf = new File(System.getProperty("user.dir") + File.separator + "run" + File.separator + "plugins" + File.separator + ((BotPlugin) instance).getPluginName());
+                    conf.mkdir();
+                    getLogger().debug("Data folder for plugin '{}' created.", ((BotPlugin) instance).getPluginName());
+                }
+                if (!((BotPlugin) instance).getConfig().isPresent()) {
+                    try {
+                        getLogger().debug("Found default config for plugin '{}', copying to plugin directory.", ((BotPlugin) instance).getPluginName());
+                        JSONObject fromJar = Util.getResourceFromJar(jar, "config.json").flatMap(Util::inputStreamToString).map(JSONObject::new).orElseThrow(FileNotFoundException::new);
+                        File conf = new File(System.getProperty("user.dir") + File.separator + "run" + File.separator + "plugins" + File.separator + ((BotPlugin) instance).getPluginName() + File.separator + "config.json");
+                        Util.writeToFile(fromJar.toString(), conf);
+                        getLogger().debug("Default config for plugin '{}' copied.", ((BotPlugin) instance).getPluginName());
+                    } catch (FileNotFoundException exception) {
+                        getLogger().debug("No default config found for plugin '{}', a new empty config will be assumed.", ((BotPlugin) instance).getPluginName());
+                        File conf = new File(System.getProperty("user.dir") + File.separator + "run" + File.separator + "plugins" + File.separator + ((BotPlugin) instance).getPluginName() + File.separator + "config.json");
+                        Util.writeToFile(new JSONObject().toString(), conf);
+                        getLogger().debug("Empty config generated for plugin '{}'.", ((BotPlugin) instance).getPluginName());
+                    }
+                }
                 getLogger().info("Enabling plugin: {}", runconfig.getString("pluginName"));
                 Thread pluginThread = new Thread(() -> {
                     JSONObject runconfigLamb = Util.getResourceFromJar(jar, "runconfig.json").flatMap(Util::inputStreamToString).map(JSONObject::new).orElseGet(JSONObject::new);
@@ -92,7 +111,7 @@ public class ImplPluginLoader implements PluginManager, Loggable {
      * Registers a system command
      *
      * @param trigger The literal command string
-     * @param cmd The executor
+     * @param cmd     The executor
      */
     public void registerSystemCommand(String trigger, SystemCommand cmd) {
         systemCommands.put(trigger, cmd);
@@ -100,6 +119,7 @@ public class ImplPluginLoader implements PluginManager, Loggable {
 
     /**
      * Gets all system commands
+     *
      * @return A list of system commands
      */
     public HashMap<String, SystemCommand> getSystemCommands() {

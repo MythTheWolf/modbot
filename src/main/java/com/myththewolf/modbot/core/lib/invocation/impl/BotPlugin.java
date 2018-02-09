@@ -1,15 +1,18 @@
 package com.myththewolf.modbot.core.lib.invocation.impl;
 
-import com.myththewolf.modbot.core.API.command.interfaces.CommandExecutor;
 import com.myththewolf.modbot.core.API.command.impl.DiscordCommand;
+import com.myththewolf.modbot.core.API.command.interfaces.CommandExecutor;
+import com.myththewolf.modbot.core.lib.Util;
 import com.myththewolf.modbot.core.lib.invocation.interfaces.PluginAdapater;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * This class represents a constructed BotPlugin <br />
@@ -140,5 +143,29 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
      */
     public List<DiscordCommand> getCommands() {
         return new ArrayList<>(this.pluginCommands.values());
+    }
+
+    /**
+     * Gets this plugin's config in a JSON format
+     *
+     * @return Optional<JSONObject>; Empty if the config doesn't exist.(Or we don't have permissions to it)
+     */
+    public Optional<JSONObject> getConfig() {
+        File conf = new File(System.getProperty("user.dir") + File.separator + "run" + File.separator + "plugins" + File.separator + getPluginName() + File.separator + "config.json");
+        JSONObject config = null;
+        if (conf.exists()) {
+            config = new JSONObject(Util.readFile(conf).get());
+        }
+        return Optional.ofNullable(config);
+    }
+
+    /**
+     * Gets this plugin's data folder in a File object
+     *
+     * @return Optional<File>; Empty if the data folder doesn't exist.(Or we don't have permissions to it)
+     */
+    public Optional<File> getDataFolder() {
+        File conf = new File(System.getProperty("user.dir") + File.separator + "run" + File.separator + "plugins" + File.separator + getPluginName());
+        return Optional.ofNullable(conf.exists() ? conf : null);
     }
 }
