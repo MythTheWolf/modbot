@@ -114,6 +114,8 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
      * Sets this plugin as disabled, unregistering all commands and events. Also invokes @link{BotPlugin#onDisable}
      */
     public void disablePlugin() {
+        this.pluginCommands = new HashMap<>();
+        this.enabled = false;
         onDisable();
     }
 
@@ -131,8 +133,13 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
      *
      * @param trigger  The string literal to trigger this command
      * @param executor The executor to invoke upon the command trigger
+     * @apiNote This method will fail if this plugin is disabled.
      */
     public void registerCommand(String trigger, CommandExecutor executor) {
+        if (!enabled) {
+            getLogger().warn("Ignored registration of command '{}' due to plugin '{}' being disabled", trigger, getPluginName());
+            return;
+        }
         this.pluginCommands.put(trigger, new DiscordCommand(this, executor, trigger));
     }
 
