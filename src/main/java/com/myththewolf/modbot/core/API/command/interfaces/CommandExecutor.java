@@ -69,7 +69,7 @@ public abstract class CommandExecutor implements CommandAdapater {
     }
 
     /**
-     * Sends a friendly message embed that gives a "success" look with the specified message
+     * Sends a friendly MessageEmbed that gives a "success" look with the specified content
      *
      * @param content The message to send within the embed.
      * @param footer  The footer to bind to the embed
@@ -84,7 +84,7 @@ public abstract class CommandExecutor implements CommandAdapater {
     }
 
     /**
-     * Sends a red "failed" message embed with a specified message
+     * Sends a red "failed" MessageEmbed with a specified content
      *
      * @param content
      */
@@ -92,7 +92,7 @@ public abstract class CommandExecutor implements CommandAdapater {
     }
 
     /**
-     * Sends a red "failed" message embed with the specified message
+     * Sends a red "failed" MessageEmbed with the specified content
      *
      * @param content The message to send within the embed.
      * @param footer  The footer to bind to the embed
@@ -128,7 +128,7 @@ public abstract class CommandExecutor implements CommandAdapater {
     /**
      * Gets the last known TextChannel in which this command was ran from
      *
-     * @return
+     * @return The TextChannel
      */
     public TextChannel getLastTextChannel() {
         return lastTextChannel;

@@ -3,16 +3,16 @@ package com.myththewolf.modbot.core.lib.invocation.impl;
 import com.myththewolf.modbot.core.API.command.impl.DiscordCommand;
 import com.myththewolf.modbot.core.API.command.interfaces.CommandExecutor;
 import com.myththewolf.modbot.core.lib.Util;
+import com.myththewolf.modbot.core.lib.event.interfaces.BotEvent;
+import com.myththewolf.modbot.core.lib.event.interfaces.EventType;
 import com.myththewolf.modbot.core.lib.invocation.interfaces.PluginAdapater;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This class represents a constructed BotPlugin <br />
@@ -47,6 +47,11 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
      * A mapping of Discord commands with their triggers.
      */
     private HashMap<String, DiscordCommand> pluginCommands = new HashMap<>();
+
+    /**
+     * A mapping of all this plugin's pluginEvents
+     */
+    private HashMap<EventType, List<BotEvent>> pluginEvents = new HashMap();
 
     /**
      * Sets up this BotPlugin, it is protected only to the system.
@@ -151,6 +156,27 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
     public List<DiscordCommand> getCommands() {
         return new ArrayList<>(this.pluginCommands.values());
     }
+
+    /**
+     * Gets the full map of plugin commands
+     *
+     * @return A new HashMap identical to this plugin's command map
+     */
+    public HashMap<String, DiscordCommand> getCommandMap() {
+        return new HashMap<>(pluginCommands);
+    }
+
+    /**
+     * Gets all events of this plugin
+     *
+     * @return The List of events
+     */
+    public List<BotEvent> getEvents() {
+        List<BotEvent> finalList = new ArrayList<>();
+        this.pluginEvents.entrySet().stream().map(Map.Entry::getValue).forEach(finalList::addAll);
+        return finalList;
+    }
+
 
     /**
      * Gets this plugin's config in a JSON format
