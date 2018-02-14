@@ -29,13 +29,14 @@ public abstract class CommandExecutor implements CommandAdapater {
      * The plugin this command is registered
      */
     private BotPlugin plugin;
+
     /**
      * Updates the cache so when a command is ran, the helper methods work to the latest
      *
-     * @param newTextChannel   The new text channel from the command
-     * @param source The command message source
+     * @param newTextChannel The new text channel from the command
+     * @param source         The command message source
      */
-    public void update(BotPlugin plugin,TextChannel newTextChannel, Message source) {
+    public void update(BotPlugin plugin, TextChannel newTextChannel, Message source) {
         this.lastTextChannel = newTextChannel;
         this.lastMessage = source;
         this.plugin = plugin;
@@ -56,7 +57,7 @@ public abstract class CommandExecutor implements CommandAdapater {
      * @param embedBuilder The message embed to be sent
      */
     public void reply(EmbedBuilder embedBuilder) {
-        getLastTextChannel().sendMessage(embedBuilder);
+        getLastTextChannel().sendMessage(embedBuilder).exceptionally(Javacord::exceptionLogger);
     }
 
     /**
@@ -65,7 +66,7 @@ public abstract class CommandExecutor implements CommandAdapater {
      * @param content The message to send within the embed.
      */
     public void succeeded(String content) {
-        succeeded(content,"The command completed successfully","Success");
+        succeeded(content, "The command completed successfully", "Success");
     }
 
     /**
@@ -81,6 +82,7 @@ public abstract class CommandExecutor implements CommandAdapater {
         succ.setTitle(title);
         succ.setFooter(footer);
         succ.setDescription(content);
+        reply(succ);
     }
 
     /**
@@ -89,6 +91,7 @@ public abstract class CommandExecutor implements CommandAdapater {
      * @param content
      */
     public void failed(String content) {
+        failed(content, "Errors occurred while processing your command", "Error");
     }
 
     /**
@@ -99,6 +102,8 @@ public abstract class CommandExecutor implements CommandAdapater {
      * @param title   The title to bind to the embed
      */
     public void failed(String content, String footer, String title) {
+        EmbedBuilder fail = new EmbedBuilder().setAuthor(getLastAuthor().get().getName(), null, getLastAuthor().get().getAvatar().getUrl().toString());
+        reply(fail);
     }
 
     /**
@@ -110,6 +115,7 @@ public abstract class CommandExecutor implements CommandAdapater {
 
     /**
      * Gets the last known message of this command run
+     *
      * @return The message
      */
     public Message getLastMessage() {
@@ -136,6 +142,7 @@ public abstract class CommandExecutor implements CommandAdapater {
 
     /**
      * Gets the plugin instance of this command
+     *
      * @return The plugin
      */
     public BotPlugin getPlugin() {
