@@ -48,6 +48,20 @@ public class ImplPluginLoader implements PluginManager, Loggable {
             URLClassLoader pluginClassLoader = new PluginClassLoader(getClass().getClassLoader());
             ((PluginClassLoader) pluginClassLoader).loadJarFile(jar);
             Class<?> C = ((PluginClassLoader) pluginClassLoader).getClassByName(runconfig.getString("mainClass"));
+            if (runconfig.isNull("pluginName")) {
+                getLogger().warn("Error while enabling plugin '{}' : pluginVersion is NULL", jar.getAbsolutePath());
+            }
+            String pluginName = runconfig.getString("pluginName");
+            if (runconfig.isNull("pluginVersion")) {
+                getLogger().warn("Error while enabling plugin '{}' : pluginVersion is NULL", jar.getAbsolutePath());
+                return;
+            }
+            String pluginVersion = runconfig.getString("pluginDescription");
+            if (runconfig.isNull("pluginDescription")) {
+                getLogger().warn("Error while enabling plugin '{}' : pluginDescription is NULL", jar.getAbsolutePath());
+                return;
+            }
+            String pluginDescription = runconfig.getString("pluginDescription");
             try {
                 Object instance = C.newInstance();
                 if (!(instance instanceof BotPlugin)) {
