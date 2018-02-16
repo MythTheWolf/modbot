@@ -38,6 +38,7 @@ public class ImplPluginLoader implements PluginManager, Loggable {
         JSONObject runconfig;
         try {
             runconfig = Util.getResourceFromJar(jar, "runconfig.json").flatMap(Util::inputStreamToString).map(JSONObject::new).orElseThrow(FileNotFoundException::new);
+            getLogger().debug("Reading plugin meta for jar: {}", jar.getAbsolutePath());
             if (runconfig.isNull("mainClass")) {
                 getLogger().warn("Error while enabling plugin: {}, key 'mainClass' in runconfig.json is not optional.", jar.getAbsolutePath());
                 return;
@@ -71,7 +72,15 @@ public class ImplPluginLoader implements PluginManager, Loggable {
                     conf.mkdir();
                     getLogger().debug("Data folder for plugin '{}' created.", pluginName);
                 }
-                Optional<JSONObject> pluginConfig = Util.getResourceFromJar(jar, "config.json").flatMap(Util::inputStreamToString).map(JSONObject::new);
+                JSONObject cnfg;
+                try{
+                    cnfg = Util.getResourceFromJar(jar, "config.json").flatMap(Util::inputStreamToString).map(JSONObject::new).orElseThrow(FileNotFoundException::new);
+                }catch (FileNotFoundException e){
+                    cnfg = null;
+                }
+
+                Optional<JSONObject> pluginConfig = Optional.ofNullable(cnfg);
+
                 if (!pluginConfig.isPresent()) {
                     getLogger().debug("Found default config for plugin '{}', copying to plugin directory.", pluginName);
                     File conf = new File(System.getProperty("user.dir") + File.separator + "run" + File.separator + "plugins" + File.separator + pluginName + File.separator + "config.json");
