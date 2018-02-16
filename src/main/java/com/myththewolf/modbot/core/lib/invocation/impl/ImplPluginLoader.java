@@ -9,10 +9,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * Implementation of PluginManager
@@ -69,24 +66,23 @@ public class ImplPluginLoader implements PluginManager, Loggable {
                     return;
                 }
                 if (!((BotPlugin) instance).getDataFolder().isPresent()) {
-                    getLogger().debug("Data folder for plugin '{}' doesn't exist. Making one now.", ((BotPlugin) instance).getPluginName());
-                    File conf = new File(System.getProperty("user.dir") + File.separator + "run" + File.separator + "plugins" + File.separator + ((BotPlugin) instance).getPluginName());
+                    getLogger().debug("Data folder for plugin '{}' doesn't exist. Making one now.", pluginName);
+                    File conf = new File(System.getProperty("user.dir") + File.separator + "run" + File.separator + "plugins" + File.separator + pluginName);
                     conf.mkdir();
-                    getLogger().debug("Data folder for plugin '{}' created.", ((BotPlugin) instance).getPluginName());
+                    getLogger().debug("Data folder for plugin '{}' created.", pluginName);
                 }
-                if (!((BotPlugin) instance).getConfig().isPresent()) {
-                    try {
-                        getLogger().debug("Found default config for plugin '{}', copying to plugin directory.", ((BotPlugin) instance).getPluginName());
-                        JSONObject fromJar = Util.getResourceFromJar(jar, "config.json").flatMap(Util::inputStreamToString).map(JSONObject::new).orElseThrow(FileNotFoundException::new);
-                        File conf = new File(System.getProperty("user.dir") + File.separator + "run" + File.separator + "plugins" + File.separator + ((BotPlugin) instance).getPluginName() + File.separator + "config.json");
-                        Util.writeToFile(fromJar.toString(), conf);
-                        getLogger().debug("Default config for plugin '{}' copied.", ((BotPlugin) instance).getPluginName());
-                    } catch (FileNotFoundException exception) {
-                        getLogger().debug("No default config found for plugin '{}', a new empty config will be assumed.", ((BotPlugin) instance).getPluginName());
-                        File conf = new File(System.getProperty("user.dir") + File.separator + "run" + File.separator + "plugins" + File.separator + ((BotPlugin) instance).getPluginName() + File.separator + "config.json");
-                        Util.writeToFile(new JSONObject().toString(), conf);
-                        getLogger().debug("Empty config generated for plugin '{}'.", ((BotPlugin) instance).getPluginName());
-                    }
+                Optional<JSONObject> pluginConfig = Util.getResourceFromJar(jar, "config.json").flatMap(Util::inputStreamToString).map(JSONObject::new);
+                if (!pluginConfig.isPresent()) {
+                    getLogger().debug("Found default config for plugin '{}', copying to plugin directory.", pluginName);
+                    File conf = new File(System.getProperty("user.dir") + File.separator + "run" + File.separator + "plugins" + File.separator + pluginName + File.separator + "config.json");
+                    Util.writeToFile(pluginConfig.get().toString(), conf);
+                    getLogger().debug("Default config for plugin '{}' copied.", pluginName);
+                } else {
+                    getLogger().debug("No default config found for plugin '{}', a new empty config will be assumed.", pluginName);
+                    File conf = new File(System.getProperty("user.dir") + File.separator + "run" + File.separator + "plugins" + File.separator + pluginName + File.separator + "config.json");
+                    Util.writeToFile(new JSONObject().toString(), conf);
+                    getLogger().debug("Empty config generated for plugin '{}'.", pluginName);
+
                 }
                 getLogger().info("Enabling plugin: {}", runconfig.getString("pluginName"));
                 Thread pluginThread = new Thread(() -> {
