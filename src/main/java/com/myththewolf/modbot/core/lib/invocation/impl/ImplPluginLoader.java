@@ -49,14 +49,14 @@ public class ImplPluginLoader implements PluginManager, Loggable {
             ((PluginClassLoader) pluginClassLoader).loadJarFile(jar);
             Class<?> C = ((PluginClassLoader) pluginClassLoader).getClassByName(runconfig.getString("mainClass"));
             if (runconfig.isNull("pluginName")) {
-                getLogger().warn("Error while enabling plugin '{}' : pluginVersion is NULL", jar.getAbsolutePath());
+                getLogger().warn("Error while enabling plugin '{}' : pluginName is NULL", jar.getAbsolutePath());
             }
             String pluginName = runconfig.getString("pluginName");
             if (runconfig.isNull("pluginVersion")) {
                 getLogger().warn("Error while enabling plugin '{}' : pluginVersion is NULL", jar.getAbsolutePath());
                 return;
             }
-            String pluginVersion = runconfig.getString("pluginDescription");
+            String pluginVersion = runconfig.getString("pluginVersion");
             if (runconfig.isNull("pluginDescription")) {
                 getLogger().warn("Error while enabling plugin '{}' : pluginDescription is NULL", jar.getAbsolutePath());
                 return;
