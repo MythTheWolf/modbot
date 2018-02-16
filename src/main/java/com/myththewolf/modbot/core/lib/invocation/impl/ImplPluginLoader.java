@@ -81,7 +81,7 @@ public class ImplPluginLoader implements PluginManager, Loggable {
 
                 Optional<JSONObject> pluginConfig = Optional.ofNullable(cnfg);
 
-                if (!pluginConfig.isPresent()) {
+                if (pluginConfig.isPresent()) {
                     getLogger().debug("Found default config for plugin '{}', copying to plugin directory.", pluginName);
                     File conf = new File(System.getProperty("user.dir") + File.separator + "run" + File.separator + "plugins" + File.separator + pluginName + File.separator + "config.json");
                     Util.writeToFile(pluginConfig.get().toString(), conf);

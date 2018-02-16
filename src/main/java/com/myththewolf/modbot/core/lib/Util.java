@@ -51,7 +51,7 @@ public class Util {
             URL url = new URL("jar:file:" + theJar.getAbsolutePath() + "!/" + pathInJar);
             is = url.openStream();
         } catch (IOException exception) {
-            getLogger().error("A internal error has occurred: {}", exception);
+            getLogger().error("A internal error has occurred: {}", exception.getMessage());
         }
         return Optional.ofNullable(is);
     }
