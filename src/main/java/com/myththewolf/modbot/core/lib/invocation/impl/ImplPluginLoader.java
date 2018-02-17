@@ -66,7 +66,8 @@ public class ImplPluginLoader implements PluginManager, Loggable {
                     getLogger().warn("Error while enabling plugin: {}, class '{}' does not extend BotPlugin", jar.getAbsolutePath(), C.getName());
                     return;
                 }
-                if (!((BotPlugin) instance).getDataFolder().isPresent()) {
+                Optional<File> dataFolder = Optional.ofNullable(new File(System.getProperty("user.dir") + File.separator + "run" + File.separator + "plugins" + File.separator + pluginName));
+                if (!dataFolder.isPresent()) {
                     getLogger().debug("Data folder for plugin '{}' doesn't exist. Making one now.", pluginName);
                     File conf = new File(System.getProperty("user.dir") + File.separator + "run" + File.separator + "plugins" + File.separator + pluginName);
                     conf.mkdir();
