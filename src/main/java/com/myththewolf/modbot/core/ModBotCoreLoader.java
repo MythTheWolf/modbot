@@ -87,12 +87,14 @@ public class ModBotCoreLoader implements Loggable {
                 getLogger().info("Registering System commands");
                 ((ImplPluginLoader) PM).registerSystemCommand(">info", new info(PM));
                 ((ImplPluginLoader) PM).registerSystemCommand(">pldisable", new disablePlugin(PM));
+                ((ImplPluginLoader) PM).registerSystemCommand(">plugin", new disablePlugin(PM));
                 discordApi.addMessageCreateListener(new CommandListener(PM));
             } catch (Exception e) {
                 getLogger().error("Login failed. Exiting.");
                 System.exit(0);
                 return;
             }
+            getLogger().info("System up.");
         } catch (JSONException exception) {
             getLogger().error("Could not read JSON configuration: {}", exception.getMessage());
         }
