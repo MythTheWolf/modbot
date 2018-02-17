@@ -12,7 +12,6 @@ import org.json.JSONObject;
 import java.io.File;
 import java.net.URLClassLoader;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * This class represents a constructed BotPlugin <br />
@@ -31,6 +30,10 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
      * The plugin description
      */
     private String pluginDescription;
+    /**
+     * The author of this plugin
+     */
+    private String pluginAuthor;
     /**
      * The parsed JSONObject of this plugin's run configuration
      */
@@ -64,6 +67,7 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
         this.pluginName = runconfig.getString("pluginName");
         this.pluginVersion = runconfig.getString("pluginDescription");
         this.pluginDescription = runconfig.getString("pluginDescription");
+        this.pluginAuthor = runconfig.getString("pluginAuthor");
         this.classLoader = loader;
         enabled = true;
         onEnable();
@@ -94,6 +98,15 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
      */
     public String getPluginVersionString() {
         return pluginVersion;
+    }
+
+    /**
+     * Gets the author of this plugin
+     *
+     * @return The plugin author
+     */
+    public String getPluginAuthor() {
+        return pluginAuthor;
     }
 
     /**
