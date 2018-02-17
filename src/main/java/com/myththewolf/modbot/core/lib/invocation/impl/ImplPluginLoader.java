@@ -8,6 +8,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URLClassLoader;
 import java.util.*;
 
@@ -66,33 +67,42 @@ public class ImplPluginLoader implements PluginManager, Loggable {
                     getLogger().warn("Error while enabling plugin: {}, class '{}' does not extend BotPlugin", jar.getAbsolutePath(), C.getName());
                     return;
                 }
-                Optional<File> dataFolder = Optional.ofNullable(new File(System.getProperty("user.dir") + File.separator + "run" + File.separator + "plugins" + File.separator + pluginName));
-                if (!dataFolder.isPresent()) {
+                File dataFolder = new File(System.getProperty("user.dir") + File.separator + "run" + File.separator + "plugins" + File.separator + pluginName);
+                if (!dataFolder.exists()) {
                     getLogger().debug("Data folder for plugin '{}' doesn't exist. Making one now.", pluginName);
                     File conf = new File(System.getProperty("user.dir") + File.separator + "run" + File.separator + "plugins" + File.separator + pluginName);
                     conf.mkdir();
                     getLogger().debug("Data folder for plugin '{}' created.", pluginName);
                 }
                 JSONObject cnfg;
-                try{
+                try {
                     cnfg = Util.getResourceFromJar(jar, "config.json").flatMap(Util::inputStreamToString).map(JSONObject::new).orElseThrow(FileNotFoundException::new);
-                }catch (FileNotFoundException e){
+                } catch (FileNotFoundException e) {
                     cnfg = null;
                 }
 
                 Optional<JSONObject> pluginConfig = Optional.ofNullable(cnfg);
-
-                if (pluginConfig.isPresent()) {
+                File missingConfMaybe = new File(dataFolder.getAbsolutePath() + File.separator + "config.json");
+                if (pluginConfig.isPresent() && !missingConfMaybe.exists()) {
                     getLogger().debug("Found default config for plugin '{}', copying to plugin directory.", pluginName);
                     File conf = new File(System.getProperty("user.dir") + File.separator + "run" + File.separator + "plugins" + File.separator + pluginName + File.separator + "config.json");
                     Util.writeToFile(pluginConfig.get().toString(), conf);
                     getLogger().debug("Default config for plugin '{}' copied.", pluginName);
-                } else {
+                } else if (!missingConfMaybe.exists()) {
                     getLogger().debug("No default config found for plugin '{}', a new empty config will be assumed.", pluginName);
-                    File conf = new File(System.getProperty("user.dir") + File.separator + "run" + File.separator + "plugins" + File.separator + pluginName + File.separator + "config.json");
+                    getLogger().debug("Creating new blank file.");
+                    File conf = new File(dataFolder.getAbsolutePath() + File.separator + "config.json");
+                    try {
+                        conf.createNewFile();
+                    } catch (IOException exception) {
+                        getLogger().error("Could not create new config file for plugin '{}', cancelling plugin enable.", pluginName);
+                        getLogger().error("Error message: {}", exception.getMessage());
+                        return;
+                    }
                     Util.writeToFile(new JSONObject().toString(), conf);
                     getLogger().debug("Empty config generated for plugin '{}'.", pluginName);
-
+                } else if (missingConfMaybe.exists()) {
+                    getLogger().debug("Config file for plugin '{}' found on disk, not making new one.", pluginName);
                 }
                 getLogger().info("Enabling plugin: {}", runconfig.getString("pluginName"));
                 Thread pluginThread = new Thread(() -> {
