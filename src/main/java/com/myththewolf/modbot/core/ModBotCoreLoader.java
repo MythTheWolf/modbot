@@ -74,7 +74,13 @@ public class ModBotCoreLoader implements Loggable {
                 DiscordApi discordApi = null;
                 if (!ModBotCoreLoader.withoutBot) {
                     getLogger().info("Starting discord bot");
-                    discordApi = new DiscordApiBuilder().setAccountType(AccountType.BOT).setToken(theDealio.getString("botToken")).login().get();
+                    if(theDealio.isNull("botType") || theDealio.getString("botType").equals("CLIENT")) {
+                        discordApi = new DiscordApiBuilder().setAccountType(AccountType.BOT).setToken(theDealio.getString("botToken")).login().get();
+                    }else{
+                        getLogger().warn("****YOU ARE USING A CLIENT TOKEN!****");
+                        getLogger().warn("This is not advised and it can get you banned!");
+                        discordApi = new DiscordApiBuilder().setAccountType(AccountType.CLIENT).setToken(theDealio.getString("botToken")).login().get();
+                    }
                     getLogger().info("Logged in. Loading plugins.");
                 } else {
                     getLogger().debug("Loading plugins without bot");
