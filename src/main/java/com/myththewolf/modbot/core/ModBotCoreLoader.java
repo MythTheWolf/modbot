@@ -8,6 +8,7 @@ import com.myththewolf.modbot.core.lib.invocation.interfaces.PluginManager;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
 import com.myththewolf.modbot.core.systemPlugin.commands.disablePlugin;
 import com.myththewolf.modbot.core.systemPlugin.commands.info;
+import com.myththewolf.modbot.core.systemPlugin.commands.plugin;
 import de.btobastian.javacord.AccountType;
 import de.btobastian.javacord.DiscordApi;
 import de.btobastian.javacord.DiscordApiBuilder;
@@ -93,7 +94,7 @@ public class ModBotCoreLoader implements Loggable {
                 getLogger().info("Registering System commands");
                 ((ImplPluginLoader) PM).registerSystemCommand(">info", new info(PM));
                 ((ImplPluginLoader) PM).registerSystemCommand(">pldisable", new disablePlugin(PM));
-                ((ImplPluginLoader) PM).registerSystemCommand(">plugin", new disablePlugin(PM));
+                ((ImplPluginLoader) PM).registerSystemCommand(">plugin", new plugin(PM));
                 discordApi.addMessageCreateListener(new CommandListener(PM));
             } catch (Exception e) {
                 getLogger().error("Login failed. Exiting.");
