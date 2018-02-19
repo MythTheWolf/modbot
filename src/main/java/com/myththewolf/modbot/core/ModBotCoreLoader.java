@@ -74,7 +74,7 @@ public class ModBotCoreLoader implements Loggable {
                 DiscordApi discordApi = null;
                 if (!ModBotCoreLoader.withoutBot) {
                     getLogger().info("Starting discord bot");
-                    if(theDealio.isNull("botType") || theDealio.getString("botType").equals("CLIENT")) {
+                    if(theDealio.isNull("botType") || !theDealio.getString("botType").equals("CLIENT")) {
                         discordApi = new DiscordApiBuilder().setAccountType(AccountType.BOT).setToken(theDealio.getString("botToken")).login().get();
                     }else{
                         getLogger().warn("****YOU ARE USING A CLIENT TOKEN!****");
