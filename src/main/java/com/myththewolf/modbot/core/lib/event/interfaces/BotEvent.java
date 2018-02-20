@@ -11,13 +11,21 @@ import java.util.Optional;
 public interface BotEvent {
     /**
      * Gets the user that fired this event
+     * There may not always be a user
      * @return User optional
      */
-    public Optional<User> getUser();
+    Optional<User> getUser();
 
     /**
      *Gets the server this event fired in
      * @return Server optional
      */
-    public Optional<Server> getServer();
+    Optional<Server> getServer();
+
+    /**
+     * Returns this event type
+     *
+     * @return The event type
+     */
+    EventType getEventType();
 }

@@ -3,7 +3,7 @@ package com.myththewolf.modbot.core.lib.invocation.impl;
 import com.myththewolf.modbot.core.API.command.impl.DiscordCommand;
 import com.myththewolf.modbot.core.API.command.interfaces.CommandExecutor;
 import com.myththewolf.modbot.core.lib.Util;
-import com.myththewolf.modbot.core.lib.event.interfaces.BotEvent;
+import com.myththewolf.modbot.core.lib.event.interfaces.EventHandler;
 import com.myththewolf.modbot.core.lib.event.interfaces.EventType;
 import com.myththewolf.modbot.core.lib.invocation.interfaces.PluginAdapater;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
@@ -54,7 +54,7 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
     /**
      * A mapping of all this plugin's pluginEvents
      */
-    private HashMap<EventType, List<BotEvent>> pluginEvents = new HashMap();
+    private HashMap<EventType, List<Object>> pluginEvents = new HashMap<>();
 
     /**
      * Sets up this BotPlugin, it is protected only to the system.
@@ -145,7 +145,8 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
      */
     public void registerCommand(String trigger, CommandExecutor executor) {
         if (!enabled) {
-            getLogger().warn("Ignored registration of command '{}' due to plugin '{}' being disabled", trigger, getPluginName());
+            getLogger()
+                    .warn("Ignored registration of command '{}' due to plugin '{}' being disabled", trigger, getPluginName());
             return;
         }
         this.pluginCommands.put(trigger, new DiscordCommand(this, executor, trigger));
@@ -174,8 +175,8 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
      *
      * @return The List of events
      */
-    public List<BotEvent> getEvents() {
-        List<BotEvent> finalList = new ArrayList<>();
+    public List<Object> getEvents() {
+        List<Object> finalList = new ArrayList<>();
         this.pluginEvents.entrySet().stream().map(Map.Entry::getValue).forEach(finalList::addAll);
         return finalList;
     }
@@ -187,11 +188,10 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
      * @return Optional<JSONObject>; Empty if the config doesn't exist.(Or we don't have permissions to it)
      */
     public Optional<JSONObject> getConfig() {
-        File conf = new File(System.getProperty("user.dir") + File.separator + "run" + File.separator + "plugins" + File.separator + getPluginName() + File.separator + "config.json");
+        File conf = new File(System
+                .getProperty("user.dir") + File.separator + "run" + File.separator + "plugins" + File.separator + getPluginName() + File.separator + "config.json");
         JSONObject config = null;
-        if (conf.exists()) {
-            config = new JSONObject(Util.readFile(conf).get());
-        }
+        if (conf.exists()) config = new JSONObject(Util.readFile(conf).get());
         return Optional.ofNullable(config);
     }
 
@@ -201,7 +201,54 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
      * @return Optional<File>; Empty if the data folder doesn't exist.(Or we don't have permissions to it)
      */
     public Optional<File> getDataFolder() {
-        File conf = new File(System.getProperty("user.dir") + File.separator + "run" + File.separator + "plugins" + File.separator + getPluginName());
+        File conf = new File(System
+                .getProperty("user.dir") + File.separator + "run" + File.separator + "plugins" + File.separator + getPluginName());
         return Optional.ofNullable(conf.exists() ? conf : null);
+    }
+
+    /**
+     * Registers a event to this plugin
+     *
+     * @param event A object which contains a EventHandler annotated method
+     */
+    public void registerEvent(Object event) {
+        Optional<EventType> optionalEventType = findEventType(event);
+        if (!optionalEventType.isPresent()) {
+            getLogger().warn("Could not register event '{}' to plugin '{}'; No valid event handlers found.");
+            return;
+        }
+        List<Object> oldEventList = this.pluginEvents.get(optionalEventType.get());
+        oldEventList.add(event);
+        this.pluginEvents.put(optionalEventType.get(), oldEventList);
+        getLogger().warn("Registered event type of {}:{} to plugin '{}'", optionalEventType.get().toString(), event
+                .getClass().getName(), getPluginName());
+    }
+
+    /**
+     * Finds the EventType given the runner object
+     *
+     * @param event The event runner
+     * @return An Optional<EventType>, empty if nothing was found
+     */
+    private Optional<EventType> findEventType(Object event) {
+        Class<?> parameterClass = Arrays.stream(event.getClass().getMethods())
+                .filter(method -> (method.isAnnotationPresent(EventHandler.class) && method.getParameterCount() == 1))
+                .flatMap(method -> Arrays
+                        .stream(method.getParameterTypes())).findFirst().orElse(null);
+        if (parameterClass == null) {
+            return Optional.empty();
+        }
+        return Arrays.stream(EventType.values()).filter(eventType -> eventType.getDataClass().equals(parameterClass))
+                .findAny();
+    }
+
+    /**
+     * Gets a list of events with the desired type
+     *
+     * @param type The Event type
+     * @return The list of events
+     */
+    public List<Object> getEventsOfType(EventType type) {
+        return this.pluginEvents.get(type);
     }
 }

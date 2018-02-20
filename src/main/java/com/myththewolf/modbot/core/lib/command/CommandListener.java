@@ -1,6 +1,9 @@
 package com.myththewolf.modbot.core.lib.command;
 
 import com.myththewolf.modbot.core.API.command.impl.DiscordCommand;
+import com.myththewolf.modbot.core.lib.event.impl.UserCommandEvent;
+import com.myththewolf.modbot.core.lib.event.interfaces.EventHandler;
+import com.myththewolf.modbot.core.lib.event.interfaces.EventType;
 import com.myththewolf.modbot.core.lib.invocation.impl.BotPlugin;
 import com.myththewolf.modbot.core.lib.invocation.impl.ImplPluginLoader;
 import com.myththewolf.modbot.core.lib.invocation.interfaces.PluginManager;
@@ -9,7 +12,10 @@ import de.btobastian.javacord.entities.message.Message;
 import de.btobastian.javacord.events.message.MessageCreateEvent;
 import de.btobastian.javacord.listeners.message.MessageCreateListener;
 
+import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * This is a core Message event, it reads incoming messages and controls commands.
@@ -18,10 +24,11 @@ public class CommandListener implements MessageCreateListener, Loggable {
     /**
      * The plugin manager
      */
-    PluginManager manager;
+    private PluginManager manager;
 
     /**
      * Constructs a new CommandListener
+     *
      * @param manager The system plugin manager
      */
     public CommandListener(PluginManager manager) {
@@ -33,17 +40,40 @@ public class CommandListener implements MessageCreateListener, Loggable {
         Thread.currentThread().setName("Events");
         Message message = messageCreateEvent.getMessage();
         String[] content = message.getContent().split(" ");
-        manager.getPlugins().stream().map(BotPlugin::getCommands).flatMap(List::stream).filter((DiscordCommand cmd) -> {
-            return (cmd.getTrigger().equals(content[0]) || content[0].equals(cmd.getParentPlugin().getPluginName() + ":" + cmd.getTrigger()));
-
-        }).forEachOrdered(discordCommand -> discordCommand.invokeCommand(messageCreateEvent.getChannel(), messageCreateEvent.getMessage().getAuthor(), messageCreateEvent.getMessage()));
+        manager.getPlugins().stream().map(BotPlugin::getCommands).flatMap(List::stream)
+                .filter((DiscordCommand cmd) -> (cmd.getTrigger().equals(content[0]) || content[0]
+                        .equals(cmd.getParentPlugin().getPluginName() + ":" + cmd.getTrigger()))
+                ).forEachOrdered(discordCommand -> discordCommand
+                .invokeCommand(messageCreateEvent.getChannel(), messageCreateEvent.getMessage()
+                        .getAuthor(), messageCreateEvent.getMessage()));
 
         ((ImplPluginLoader) manager).getSystemCommands().forEach((key, val) -> {
             if (key.equals(content[0])) {
-                getLogger().info("{} ran a system command: {}", messageCreateEvent.getMessage().getAuthor().getName(), key);
+                getLogger().info("{} ran a system command: {}", messageCreateEvent.getMessage().getAuthor()
+                        .getName(), key);
                 val.onCommand(messageCreateEvent.getMessage().getAuthor(), messageCreateEvent.getMessage());
             }
         });
+
+        manager.getPlugins().stream().flatMap(plugin -> plugin.getEventsOfType(EventType.COMMAND_RUN).stream())
+                .forEach(runner -> {
+                    Optional<Method> methodOptional = Arrays.stream(runner.getClass().getMethods())
+                            .filter(method -> method.isAnnotationPresent(EventHandler.class)).findAny();
+                    if (!methodOptional.isPresent()) {
+                        getLogger()
+                                .warn("Could not pass event of type COMMAND_RUN to class '{}', no runner method found", runner
+                                        .getClass().getName());
+                    } else {
+                        try {
+                            methodOptional.get()
+                                    .invoke(runner, new UserCommandEvent(manager, messageCreateEvent.getMessage()));
+                        } catch (Exception e) {
+                            getLogger()
+                                    .error("Could not pass event of type COMMAND_RUN to class '{}': Internal error! (Our fault): {}", runner
+                                            .getClass().getName(), e.getMessage());
+                        }
+                    }
+                });
     }
 
 }
