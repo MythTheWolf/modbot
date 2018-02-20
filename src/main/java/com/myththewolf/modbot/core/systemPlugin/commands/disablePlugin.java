@@ -38,7 +38,5 @@ public class disablePlugin implements SystemCommand {
         } else {
             message.getChannel().sendMessage(":warning: Invalid permissions").exceptionally(Javacord::exceptionLogger);
         }
-
-
     }
 }

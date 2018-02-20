@@ -1,5 +1,6 @@
 package com.myththewolf.modbot.core.lib.event.interfaces;
 
+import com.myththewolf.modbot.core.lib.invocation.impl.BotPlugin;
 import de.btobastian.javacord.entities.Server;
 import de.btobastian.javacord.entities.User;
 
@@ -28,4 +29,10 @@ public interface BotEvent {
      * @return The event type
      */
     EventType getEventType();
+
+    /**
+     * Gets the plugin that this event belongs to
+     * @return The plugin
+     */
+    BotPlugin getPlugin();
 }

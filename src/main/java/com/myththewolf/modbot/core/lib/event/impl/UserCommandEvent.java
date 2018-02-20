@@ -24,13 +24,19 @@ public class UserCommandEvent implements BotEvent {
      * The executor of the command run
      */
     private CommandExecutor commandExecutor;
+    /**
+     * The plugin that this event is being passed to
+     */
+    private BotPlugin botPlugin;
 
     /**
      * Constructs a new UserCommandEvent
      *
-     * @param message The message that triggered the command
+     * @param manager The system plugin manager
+     * @param message The source message of the command
+     * @param plugin  The plugin that this event will be passed to
      */
-    public UserCommandEvent(PluginManager manager, Message message) {
+    public UserCommandEvent(PluginManager manager, Message message, BotPlugin plugin) {
         commandExecutor = manager.getPlugins()
                 .stream()
                 .map(BotPlugin::getCommands)
@@ -42,6 +48,7 @@ public class UserCommandEvent implements BotEvent {
                 .get()
                 .getExecutor();
         this.message = message;
+        this.botPlugin = plugin;
     }
 
     @Override
@@ -59,12 +66,17 @@ public class UserCommandEvent implements BotEvent {
      *
      * @return The command
      */
-    private CommandExecutor getCommand() {
+    public CommandExecutor getCommand() {
         return this.commandExecutor;
     }
 
     @Override
     public EventType getEventType() {
         return EventType.COMMAND_RUN;
+    }
+
+    @Override
+    public BotPlugin getPlugin() {
+        return botPlugin;
     }
 }

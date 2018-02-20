@@ -19,7 +19,10 @@ import org.slf4j.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.security.InvalidParameterException;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Date;
 
 /**
  * This class is the core of everything, starting all the sub-processes
@@ -39,7 +42,16 @@ public class ModBotCoreLoader implements Loggable {
         MBCL.start();
     }
 
+    /**
+     * Starts everything in the following order:
+     *  - Look for needed dirs (run, run/plugins) and create if needed <br />
+     *  - Load a parse run/runconfig.json; Create if needed <br />
+     *  - Start discord bot
+     *  - Load plugins & enable plugins
+     *  - Register system commands
+     */
     public void start() {
+        LocalDateTime START = LocalDateTime.now();
         SYSTEM_LOGGER = getLogger();
         Thread.currentThread().setName("System");
         File current = new File(System.getProperty("user.dir") + File.separator + "run");
@@ -101,7 +113,9 @@ public class ModBotCoreLoader implements Loggable {
                 System.exit(0);
                 return;
             }
-            getLogger().info("System up.");
+            LocalDateTime END= LocalDateTime.now();
+
+            getLogger().info("System up! (Took {}ms",Duration.between(START,END).toMillis());
         } catch (JSONException exception) {
             getLogger().error("Could not read JSON configuration: {}", exception.getMessage());
         }
