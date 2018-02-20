@@ -22,13 +22,16 @@ public class plugin implements SystemCommand {
     @Override
     public void onCommand(MessageAuthor author, Message message) {
         if (!(message.getContent().split(" ").length > 0)) {
-            message.getChannel().sendMessage(":warning: Usage: `>plugin <plugin name>`").exceptionally(Javacord::exceptionLogger);
+            message.getChannel().sendMessage(":warning: Usage: `>plugin <plugin name>`")
+                    .exceptionally(Javacord::exceptionLogger);
             return;
         }
         String plugin = Util.arrayToString(1, message.getContent().split(" "));
-        Optional<BotPlugin> theBotPlugin = pluginManager.getPlugins().stream().filter(botPlugin -> botPlugin.getPluginName().equals(plugin)).findFirst();
+        Optional<BotPlugin> theBotPlugin = pluginManager.getPlugins().stream()
+                .filter(botPlugin -> botPlugin.getPluginName().equals(plugin)).findFirst();
         if (!theBotPlugin.isPresent()) {
-            message.getChannel().sendMessage(":warning: No plugin found by that name").exceptionally(Javacord::exceptionLogger);
+            message.getChannel().sendMessage(":warning: No plugin found by that name")
+                    .exceptionally(Javacord::exceptionLogger);
             return;
         }
         EmbedBuilder embedBuilder = new EmbedBuilder();
@@ -36,7 +39,12 @@ public class plugin implements SystemCommand {
         embedBuilder.setTitle(theBotPlugin.get().getPluginName());
         embedBuilder.addField("Author", theBotPlugin.get().getPluginAuthor(), false);
         embedBuilder.addField("Version", theBotPlugin.get().getPluginVersionString(), false);
-        embedBuilder.addField("Data folder location:", theBotPlugin.get().getDataFolder().get().getAbsolutePath(), false);
+        embedBuilder
+                .addField("Data folder location:", theBotPlugin.get().getDataFolder().get().getAbsolutePath(), false);
+        embedBuilder.addField("Number of registered commands:", Integer
+                .toString(theBotPlugin.get().getCommands().size()), false);
+        embedBuilder.addField("Number of registered events:", Integer
+                .toString(theBotPlugin.get().getEvents().size()), false);
         embedBuilder.setDescription(theBotPlugin.get().getPluginDescription());
         message.getChannel().sendMessage(embedBuilder).exceptionally(Javacord::exceptionLogger);
     }

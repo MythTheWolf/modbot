@@ -103,6 +103,9 @@ public abstract class CommandExecutor implements CommandAdapater {
      */
     public void failed(String content, String footer, String title) {
         EmbedBuilder fail = new EmbedBuilder().setAuthor(getLastAuthor().get().getName(), null, getLastAuthor().get().getAvatar().getUrl().toString());
+        fail.setFooter(footer);
+        fail.setTitle(title);
+        fail.setDescription(content);
         reply(fail);
     }
 

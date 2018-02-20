@@ -64,6 +64,7 @@ public class ImplPluginLoader implements PluginManager, Loggable {
 
             if (runconfig.isNull("pluginAuthor")) {
                 getLogger().warn("Error while enabling plugin '{}' : pluginAuthor is NULL", jar.getAbsolutePath());
+                return;
             }
             try {
                 Object instance = C.newInstance();
@@ -115,7 +116,7 @@ public class ImplPluginLoader implements PluginManager, Loggable {
                 });
                 pluginThread.setName(runconfig.getString("pluginName"));
                 pluginThread.start();
-                this.plugins.put(((BotPlugin) instance).getPluginName(), ((BotPlugin) instance));
+                this.plugins.put(runconfig.getString("pluginName"), ((BotPlugin) instance));
             } catch (InstantiationException | IllegalAccessException e) {
                 getLogger().error("Internal Exception while loading plugin: {}, ", jar.getAbsolutePath(), e);
                 return;
@@ -138,7 +139,7 @@ public class ImplPluginLoader implements PluginManager, Loggable {
 
     @Override
     public List<BotPlugin> getPlugins() {
-        return new ArrayList<>(plugins.values());
+        return new ArrayList<BotPlugin>(this.plugins.values());
     }
 
     /**

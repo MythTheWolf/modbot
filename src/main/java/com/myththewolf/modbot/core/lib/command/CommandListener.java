@@ -22,6 +22,10 @@ import java.util.Optional;
  */
 public class CommandListener implements MessageCreateListener, Loggable {
     /**
+     * Used to break out of the event method if we receive a message event but it's not a command
+     */
+    private boolean isValidCommand = false;
+    /**
      * The plugin manager
      */
     private PluginManager manager;
@@ -37,15 +41,20 @@ public class CommandListener implements MessageCreateListener, Loggable {
 
     @Override
     public void onMessageCreate(MessageCreateEvent messageCreateEvent) {
+
+        isValidCommand = false;
         Thread.currentThread().setName("Events");
         Message message = messageCreateEvent.getMessage();
         String[] content = message.getContent().split(" ");
         manager.getPlugins().stream().map(BotPlugin::getCommands).flatMap(List::stream)
                 .filter((DiscordCommand cmd) -> (cmd.getTrigger().equals(content[0]) || content[0]
                         .equals(cmd.getParentPlugin().getPluginName() + ":" + cmd.getTrigger()))
-                ).forEachOrdered(discordCommand -> discordCommand
-                .invokeCommand(messageCreateEvent.getChannel(), messageCreateEvent.getMessage()
-                        .getAuthor(), messageCreateEvent.getMessage()));
+                ).forEachOrdered(discordCommand -> {
+            discordCommand
+                    .invokeCommand(messageCreateEvent.getChannel(), messageCreateEvent.getMessage()
+                            .getAuthor(), messageCreateEvent.getMessage());
+            isValidCommand = true;
+        });
 
         ((ImplPluginLoader) manager).getSystemCommands().forEach((key, val) -> {
             if (key.equals(content[0])) {
@@ -54,28 +63,28 @@ public class CommandListener implements MessageCreateListener, Loggable {
                 val.onCommand(messageCreateEvent.getMessage().getAuthor(), messageCreateEvent.getMessage());
             }
         });
-
-        manager.getPlugins().stream().flatMap(plugin -> plugin.getEventsOfType(EventType.COMMAND_RUN).stream())
-                .forEach(runner -> {
-                    Optional<Method> methodOptional = Arrays.stream(runner.getClass().getMethods())
-                            .filter(method -> method.isAnnotationPresent(EventHandler.class)).findAny();
-                    if (!methodOptional.isPresent()) {
-                        getLogger()
-                                .warn("Could not pass event of type COMMAND_RUN to class '{}', no runner method found", runner
-                                        .getClass().getName());
-                    } else {
-                        try {
-                            methodOptional.get()
-                                    .invoke(runner, new UserCommandEvent(manager, messageCreateEvent.getMessage()));
-                        } catch (Exception e) {
+        if (isValidCommand) {
+            manager.getPlugins().stream().flatMap(plugin -> plugin.getEventsOfType(EventType.COMMAND_RUN).stream())
+                    .forEach(runner -> {
+                        Optional<Method> methodOptional = Arrays.stream(runner.getClass().getMethods())
+                                .filter(method -> method.isAnnotationPresent(EventHandler.class)).findAny();
+                        if (!methodOptional.isPresent()) {
                             getLogger()
-                                    .error("Could not pass event of type COMMAND_RUN to class '{}': Internal error! (Our fault): {}", runner
-                                            .getClass().getName(), e.getMessage());
+                                    .warn("Could not pass event of type COMMAND_RUN to class '{}', no runner method found", runner
+                                            .getClass().getName());
+                        } else {
+                            try {
+                                methodOptional.get()
+                                        .invoke(runner, new UserCommandEvent(manager, messageCreateEvent.getMessage()));
+                            } catch (Exception e) {
+                                getLogger()
+                                        .error("Could not pass event of type COMMAND_RUN to class '{}': Internal error! (Our fault): {}", runner
+                                                .getClass().getName(), e.getMessage());
+                            }
                         }
-                    }
-                });
+                    });
+        }
     }
-
 }
 
 

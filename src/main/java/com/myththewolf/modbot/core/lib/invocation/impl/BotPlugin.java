@@ -225,7 +225,7 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
         List<Object> oldEventList = this.pluginEvents.get(optionalEventType.get());
         oldEventList.add(event);
         this.pluginEvents.put(optionalEventType.get(), oldEventList);
-        getLogger().warn("Registered event type of {}:{} to plugin '{}'", optionalEventType.get().toString(), event
+        getLogger().debug("Registered event type of {}:{} to plugin '{}'", optionalEventType.get().toString(), event
                 .getClass().getName(), getPluginName());
     }
 
