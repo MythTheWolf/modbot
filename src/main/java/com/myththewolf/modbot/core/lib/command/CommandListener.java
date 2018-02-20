@@ -75,7 +75,7 @@ public class CommandListener implements MessageCreateListener, Loggable {
                         } else {
                             try {
                                 methodOptional.get()
-                                        .invoke(runner, new UserCommandEvent(manager, messageCreateEvent.getMessage()));
+                                        .invoke(runner, new UserCommandEvent(manager, messageCreateEvent.getMessage()), );
                             } catch (Exception e) {
                                 getLogger()
                                         .error("Could not pass event of type COMMAND_RUN to class '{}': Internal error! (Our fault): {}", runner
@@ -84,6 +84,10 @@ public class CommandListener implements MessageCreateListener, Loggable {
                         }
                     });
         }
+    }
+
+    private BotPlugin runnerToBotPlugin(Object runner){
+        manager.getPlugins().stream().filter(plugin -> plugin.getEvents().stream().filter())
     }
 }
 
