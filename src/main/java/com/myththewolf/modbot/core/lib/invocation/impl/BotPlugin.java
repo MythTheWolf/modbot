@@ -70,6 +70,9 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
         this.pluginAuthor = runconfig.getString("pluginAuthor");
         this.classLoader = loader;
         enabled = true;
+        for (EventType I : EventType.values()) {
+            this.pluginEvents.put(I, new ArrayList<>());
+        }
         onEnable();
     }
 
@@ -217,6 +220,8 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
             getLogger().warn("Could not register event '{}' to plugin '{}'; No valid event handlers found.");
             return;
         }
+        getLogger().debug("Mapped object '{}' to event type '{}'", event.getClass().getName(), optionalEventType.get()
+                .toString());
         List<Object> oldEventList = this.pluginEvents.get(optionalEventType.get());
         oldEventList.add(event);
         this.pluginEvents.put(optionalEventType.get(), oldEventList);
