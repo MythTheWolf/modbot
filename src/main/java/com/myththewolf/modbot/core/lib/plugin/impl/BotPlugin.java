@@ -3,9 +3,9 @@ package com.myththewolf.modbot.core.lib.plugin.impl;
 import com.myththewolf.modbot.core.API.command.impl.DiscordCommand;
 import com.myththewolf.modbot.core.API.command.interfaces.CommandExecutor;
 import com.myththewolf.modbot.core.lib.Util;
-import com.myththewolf.modbot.core.lib.event.interfaces.EventHandler;
-import com.myththewolf.modbot.core.lib.event.interfaces.EventType;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
+import com.myththewolf.modbot.core.lib.plugin.event.interfaces.EventHandler;
+import com.myththewolf.modbot.core.lib.plugin.event.interfaces.EventType;
 import com.myththewolf.modbot.core.lib.plugin.interfaces.PluginAdapater;
 import org.json.JSONObject;
 

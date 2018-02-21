@@ -2,8 +2,8 @@ package com.myththewolf.modbot.core;
 
 
 import com.myththewolf.modbot.core.lib.Util;
-import com.myththewolf.modbot.core.lib.command.CommandListener;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
+import com.myththewolf.modbot.core.lib.plugin.command.CommandListener;
 import com.myththewolf.modbot.core.lib.plugin.impl.ImplPluginLoader;
 import com.myththewolf.modbot.core.lib.plugin.interfaces.PluginManager;
 import com.myththewolf.modbot.core.systemPlugin.commands.disablePlugin;
