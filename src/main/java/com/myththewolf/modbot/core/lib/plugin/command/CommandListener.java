@@ -106,8 +106,8 @@ public class CommandListener implements MessageCreateListener, Loggable {
     }
 
     private BotPlugin runnerToBotPlugin(Object runner) {
-        return manager.getPlugins().stream().filter(plugin -> plugin.getEvents().stream()
-                .filter(o -> o.getClass().getName().equals(runner.getClass().getName())).findAny().isPresent())
+        return manager.getPlugins().stream().filter((BotPlugin plugin) -> plugin.getEvents().stream()
+                .anyMatch(o -> o.getClass().getName().equals(runner.getClass().getName())))
                 .findFirst().orElse(null);
     }
 }
