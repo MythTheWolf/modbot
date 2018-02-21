@@ -2,8 +2,8 @@ package com.myththewolf.modbot.core.API.command.impl;
 
 
 import com.myththewolf.modbot.core.API.command.interfaces.CommandExecutor;
-import com.myththewolf.modbot.core.lib.invocation.impl.BotPlugin;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
+import com.myththewolf.modbot.core.lib.plugin.impl.BotPlugin;
 import de.btobastian.javacord.entities.channels.TextChannel;
 import de.btobastian.javacord.entities.message.Message;
 import de.btobastian.javacord.entities.message.MessageAuthor;

@@ -1,7 +1,7 @@
 package com.myththewolf.modbot.core.systemPlugin.commands;
 
-import com.myththewolf.modbot.core.lib.invocation.impl.BotPlugin;
-import com.myththewolf.modbot.core.lib.invocation.interfaces.PluginManager;
+import com.myththewolf.modbot.core.lib.plugin.impl.BotPlugin;
+import com.myththewolf.modbot.core.lib.plugin.interfaces.PluginManager;
 import com.myththewolf.modbot.core.systemPlugin.SystemCommand;
 import de.btobastian.javacord.Javacord;
 import de.btobastian.javacord.entities.message.Message;

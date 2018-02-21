@@ -1,6 +1,6 @@
 package com.myththewolf.modbot.core.lib.event.interfaces;
 
-import com.myththewolf.modbot.core.lib.invocation.impl.BotPlugin;
+import com.myththewolf.modbot.core.lib.plugin.impl.BotPlugin;
 import de.btobastian.javacord.entities.Server;
 import de.btobastian.javacord.entities.User;
 
