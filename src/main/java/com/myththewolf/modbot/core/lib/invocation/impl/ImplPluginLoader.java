@@ -9,8 +9,11 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of PluginManager
@@ -79,6 +82,14 @@ public class ImplPluginLoader implements PluginManager, Loggable {
                     conf.mkdir();
                     getLogger().debug("Data folder for plugin '{}' created.", pluginName);
                 }
+                File manDir = new File(dataFolder.getAbsolutePath() + File.separator + "manuals");
+                if (!manDir.exists()) {
+                    getLogger().debug("Manual page folder for plugin '{}' doesn't exist. Making one now.", pluginName);
+                    manDir.mkdir();
+                    getLogger().debug("Manual page folder for plugin '{}' created.", pluginName);
+                }
+
+
                 JSONObject cnfg;
                 try {
                     cnfg = Util.getResourceFromJar(jar, "config.json").flatMap(Util::inputStreamToString).map(JSONObject::new).orElseThrow(FileNotFoundException::new);
@@ -108,6 +119,17 @@ public class ImplPluginLoader implements PluginManager, Loggable {
                     getLogger().debug("Empty config generated for plugin '{}'.", pluginName);
                 } else if (missingConfMaybe.exists()) {
                     getLogger().debug("Config file for plugin '{}' found on disk, not making new one.", pluginName);
+                }
+                URL manPages = getClass().getResource("man-pages");
+                try {
+                    File manualPageFile = new File(manPages.toURI());
+                    List<File> manuals = Arrays.stream(manualPageFile.listFiles())
+                            .filter(file -> file.getName().endsWith(".json")).collect(Collectors.toList());
+                    manuals.stream().map(Util::readFile).map(JSONObject::new).forEach(parsedManual -> {
+
+                    });
+                } catch (URISyntaxException excepion) {
+                    getLogger().warn("Could not find manual page folder in plugin: {}", pluginName);
                 }
                 getLogger().info("Enabling plugin: {}", runconfig.getString("pluginName"));
                 Thread pluginThread = new Thread(() -> {
