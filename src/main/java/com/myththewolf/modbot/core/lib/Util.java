@@ -22,6 +22,7 @@ import com.myththewolf.modbot.core.ModBotCoreLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.*;
 import java.io.*;
 import java.net.URL;
 import java.util.Optional;
@@ -137,4 +138,24 @@ public class Util {
         }
         return finalStr;
     }
+
+    /**
+     * Gets a color by name
+     *
+     * @param name The color name
+     * @return The color
+     */
+    public static Color getColorByName(String name) {
+        try {
+            return (Color) Color.class.getField(name.toUpperCase()).get(null);
+        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+            getLogger().warn("Invalid color name: {}" + name);
+            return Color.BLACK;
+        }
+    }
+
+    public static String wrapInCodeBlock(String source) {
+        return "```" + source + "```";
+    }
 }
+

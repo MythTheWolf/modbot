@@ -1,0 +1,14 @@
+{
+  "type": "COMMAND_SYNTAX",
+  "for": "!boop",
+  "description": "A command that boops someone!",
+  "arguments": [
+    {
+      "name": "person",
+      "type": "A user mention",
+      "required": true,
+      "description": "The target to be booped",
+      "embedColor": "RED"
+    }
+  ]
+}

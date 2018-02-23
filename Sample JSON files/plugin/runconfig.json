@@ -1,0 +1,7 @@
+{
+  "pluginName": "JavaEval",
+  "pluginDescription": "A plugin that allows for the bot owner to evaluate java code via discord",
+  "pluginVersion": "1.0",
+  "pluginAuthor": "MythTheWolf",
+  "mainClass": "com.myththewolf.eval.EvalMain"
+}

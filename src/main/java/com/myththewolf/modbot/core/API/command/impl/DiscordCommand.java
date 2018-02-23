@@ -20,11 +20,17 @@ package com.myththewolf.modbot.core.API.command.impl;
 
 
 import com.myththewolf.modbot.core.API.command.interfaces.CommandExecutor;
+import com.myththewolf.modbot.core.lib.Util;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
 import com.myththewolf.modbot.core.lib.plugin.invocation.impl.BotPlugin;
+import com.myththewolf.modbot.core.lib.plugin.manPage.impl.ImplCommandUsageManual;
+import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.ManualType;
+import de.btobastian.javacord.Javacord;
 import de.btobastian.javacord.entities.channels.TextChannel;
 import de.btobastian.javacord.entities.message.Message;
 import de.btobastian.javacord.entities.message.MessageAuthor;
+
+import java.util.Optional;
 
 /**
  * This class represents a CommandExecutor container for easy control
@@ -81,8 +87,17 @@ public class DiscordCommand implements Loggable {
      * @param source  The message that triggered the command
      */
     public void invokeCommand(TextChannel channel, MessageAuthor user, Message source) {
+        String[] args = source.getContent().substring(getTrigger().length(), source.getContent().length()).split(" ");
+        Optional<ImplCommandUsageManual> commandUsageManual = getParentPlugin()
+                .getManuasOfType(ManualType.COMMAND_SYNTAX).stream()
+                .filter(manualPage -> manualPage.getPageName().equals(getTrigger())).findAny()
+                .map(manualPage -> (ImplCommandUsageManual) manualPage);
+        if (commandUsageManual.isPresent() && args.length < commandUsageManual.get().getNumRequiredArgs()) {
+            channel.sendMessage("The syntax of the command is incorrect. Usage: " + Util
+                    .wrapInCodeBlock(commandUsageManual.get().getUsage())).exceptionally(Javacord::exceptionLogger);
+            return;
+        }
         Thread commandThread = new Thread(() -> {
-            String[] args = source.getContent().substring(getTrigger().length(), source.getContent().length()).split(" ");
             getExecutor().update(getParentPlugin(), channel, source);
             getExecutor().onCommand(channel, user, args, source);
             getLogger().info("{} ran a command: {}", user.getName(), getTrigger());
