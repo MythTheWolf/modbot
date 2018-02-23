@@ -23,7 +23,6 @@ import com.myththewolf.modbot.core.lib.Util;
 import com.myththewolf.modbot.core.lib.plugin.invocation.impl.BotPlugin;
 import com.myththewolf.modbot.core.lib.plugin.invocation.interfaces.PluginManager;
 import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.CommandUsageManual;
-import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.ManualPageEmbed;
 import de.btobastian.javacord.Javacord;
 import de.btobastian.javacord.entities.channels.TextChannel;
 import de.btobastian.javacord.entities.message.embed.EmbedBuilder;
@@ -119,7 +118,7 @@ public class ImplCommandUsageManual implements CommandUsageManual {
 
     @Override
     public void displayNewEmbed(TextChannel scope) {
-        scope.sendMessage((EmbedBuilder) getPageOf(0)).exceptionally(Javacord::exceptionLogger);
+
     }
 
     @Override

@@ -18,16 +18,33 @@
 
 package com.myththewolf.modbot.core.systemPlugin.commands;
 
+import com.myththewolf.modbot.core.lib.plugin.invocation.impl.BotPlugin;
+import com.myththewolf.modbot.core.lib.plugin.invocation.interfaces.PluginManager;
 import com.myththewolf.modbot.core.systemPlugin.SystemCommand;
 import de.btobastian.javacord.entities.message.Message;
 import de.btobastian.javacord.entities.message.MessageAuthor;
 
 import java.util.Arrays;
+import java.util.List;
 
 public class help implements SystemCommand {
+    PluginManager manager;
+    boolean found = false;
+
+    public help(PluginManager pl) {
+        manager = pl;
+    }
+
     @Override
     public void onCommand(MessageAuthor author, Message message) {
+        found = false;
         String[] args = Arrays.copyOfRange(message.getContent().split(" "), 1, message.getContent().split(" ").length);
+        manager.getPlugins().stream().map(BotPlugin::getManuals).flatMap(List::stream)
+                .filter(pluginManualPage -> pluginManualPage.getPageName().equals(args[0]))
+                .forEach(pluginManualPage -> {
+                    found = true;
+                    pluginManualPage.displayNewEmbed(message.getChannel());
+                });
 
     }
 }

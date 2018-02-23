@@ -25,6 +25,7 @@ import com.myththewolf.modbot.core.lib.logging.Loggable;
 import com.myththewolf.modbot.core.lib.plugin.event.interfaces.EventHandler;
 import com.myththewolf.modbot.core.lib.plugin.event.interfaces.EventType;
 import com.myththewolf.modbot.core.lib.plugin.invocation.interfaces.PluginAdapater;
+import com.myththewolf.modbot.core.lib.plugin.manPage.impl.ManualPageEmbed;
 import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.ManualType;
 import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.PluginManualPage;
 import org.json.JSONObject;
@@ -79,6 +80,7 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
 
     private HashMap<ManualType, List<PluginManualPage>> manualPages = new HashMap<>();
 
+    private List<ManualPageEmbed> manualPageEmbeds = new ArrayList<>();
     /**
      * Sets up this BotPlugin, it is protected only to the system.
      *
@@ -301,6 +303,16 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
      */
     public void updateManualList(ManualType type, List<PluginManualPage> pages) {
         this.manualPages.put(type, new ArrayList<>(pages));
+    }
+
+    /**
+     * Gets all manuals of all types
+     * @return The manual list
+     */
+    public List<PluginManualPage> getManuals() {
+        List<PluginManualPage> finalList = new ArrayList<>();
+        this.manualPages.entrySet().stream().map(Map.Entry::getValue).forEach(finalList::addAll);
+        return finalList;
     }
 }
 
