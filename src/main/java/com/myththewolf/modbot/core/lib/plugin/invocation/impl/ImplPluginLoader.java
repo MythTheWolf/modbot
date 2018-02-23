@@ -27,14 +27,11 @@ import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.PluginManualPag
 import com.myththewolf.modbot.core.systemPlugin.SystemCommand;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.io.*;
 import java.net.URLClassLoader;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 /**
  * Implementation of PluginManager
@@ -48,6 +45,47 @@ public class ImplPluginLoader implements PluginManager, Loggable {
      * This map contains all system commands.
      */
     private HashMap<String, SystemCommand> systemCommands = new HashMap<>();
+
+    /**
+     * Copies a directory from a jar file to an external directory.
+     */
+    public static void copyResourcesToDirectory(JarFile fromJar, String jarDir, String destDir)
+            throws IOException {
+        for (Enumeration<JarEntry> entries = fromJar.entries(); entries.hasMoreElements(); ) {
+            JarEntry entry = entries.nextElement();
+            if (entry.getName().startsWith(jarDir + "/") && !entry.isDirectory()) {
+                File dest = new File(destDir + "/" + entry.getName().substring(jarDir.length() + 1));
+                File parent = dest.getParentFile();
+                if (parent != null) {
+                    parent.mkdirs();
+                }
+
+                FileOutputStream out = new FileOutputStream(dest);
+                InputStream in = fromJar.getInputStream(entry);
+
+                try {
+                    byte[] buffer = new byte[8 * 1024];
+
+                    int s = 0;
+                    while ((s = in.read(buffer)) > 0) {
+                        out.write(buffer, 0, s);
+                    }
+                } catch (IOException e) {
+                    throw new IOException("Could not copy asset from jar file", e);
+                } finally {
+                    try {
+                        in.close();
+                    } catch (IOException ignored) {
+                    }
+                    try {
+                        out.close();
+                    } catch (IOException ignored) {
+                    }
+                }
+            }
+        }
+
+    }
 
     /**
      * Loads a plugin given a JAR file, and enables it.
@@ -159,23 +197,22 @@ public class ImplPluginLoader implements PluginManager, Loggable {
                 });
                 pluginThread.setName(runconfig.getString("pluginName"));
                 pluginThread.start();
-
-
-                URL manPages = getClass().getResource("man-pages");
                 try {
-                    File manualPageFile = new File(manPages.toURI());
-                    List<File> manuals = Arrays.stream(manualPageFile.listFiles())
-                            .filter(file -> file.getName().endsWith(".json")).collect(Collectors.toList());
-                    manuals.stream().map(Util::readFile).map(JSONObject::new).forEach(parsedManual -> {
-                        if (parsedManual.getString("type").equals("COMMAND_SYNTAX")) {
-                            addManual(((BotPlugin) instance), ManualType.COMMAND_SYNTAX, parsedManual);
-                        } else {
-
-                        }
-                    });
-                } catch (URISyntaxException exception) {
-                    getLogger().warn("Could not find manual page folder in plugin: {}", pluginName);
+                    copyResourcesToDirectory(new JarFile(jar), "manPages", manDir.getAbsolutePath());
+                } catch (Exception e) {
+                    getLogger()
+                            .warn("Could not copy manuals for plugin '{}' outside of JAR: {}", pluginName, pluginName);
                 }
+                Arrays.stream(manDir.listFiles()).filter(file -> file.getName().endsWith(".json"))
+                        .map(file -> Util.readFile(file).get()).map(JSONObject::new).forEach(parsedManual -> {
+                    switch (parsedManual.getString("type")) {
+                        case "COMMAND_SYNTAX":
+                            addManual(((BotPlugin) instance), ManualType.COMMAND_SYNTAX, parsedManual);
+                            break;
+                        default:
+                            break;
+                    }
+                });
                 this.plugins.put(runconfig.getString("pluginName"), ((BotPlugin) instance));
             } catch (InstantiationException | IllegalAccessException e) {
                 getLogger().error("Internal Exception while loading plugin: {}, ", jar.getAbsolutePath(), e);
@@ -186,7 +223,6 @@ public class ImplPluginLoader implements PluginManager, Loggable {
             getLogger()
                     .warn("Error while enabling plugin: {}, runconfig.json was not found: ", jar.getAbsolutePath(), e);
         }
-
     }
 
     /**

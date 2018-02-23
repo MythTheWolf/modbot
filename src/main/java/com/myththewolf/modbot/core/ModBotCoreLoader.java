@@ -126,7 +126,8 @@ public class ModBotCoreLoader implements Loggable {
                 ((ImplPluginLoader) PM).registerSystemCommand(">plugin", new plugin(PM));
                 discordApi.addMessageCreateListener(new CommandListener(PM));
             } catch (Exception e) {
-                getLogger().error("Login failed. Exiting.");
+                getLogger().error("Exception in main thread:");
+                e.printStackTrace();
                 System.exit(0);
                 return;
             }

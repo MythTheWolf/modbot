@@ -30,6 +30,7 @@ import de.btobastian.javacord.entities.channels.TextChannel;
 import de.btobastian.javacord.entities.message.Message;
 import de.btobastian.javacord.entities.message.MessageAuthor;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 /**
@@ -87,14 +88,17 @@ public class DiscordCommand implements Loggable {
      * @param source  The message that triggered the command
      */
     public void invokeCommand(TextChannel channel, MessageAuthor user, Message source) {
-        String[] args = source.getContent().substring(getTrigger().length(), source.getContent().length()).split(" ");
+        String[] args = Arrays.copyOfRange(source.getContent().split(" "), 1, source.getContent().split(" ").length);
+        getLogger().debug(Arrays.toString(args));
         Optional<ImplCommandUsageManual> commandUsageManual = getParentPlugin()
                 .getManuasOfType(ManualType.COMMAND_SYNTAX).stream()
                 .filter(manualPage -> manualPage.getPageName().equals(getTrigger())).findAny()
                 .map(manualPage -> (ImplCommandUsageManual) manualPage);
+        getLogger().debug(args.length + "<" + commandUsageManual.get().getNumRequiredArgs());
         if (commandUsageManual.isPresent() && args.length < commandUsageManual.get().getNumRequiredArgs()) {
-            channel.sendMessage("The syntax of the command is incorrect. Usage: " + Util
-                    .wrapInCodeBlock(commandUsageManual.get().getUsage())).exceptionally(Javacord::exceptionLogger);
+            channel.sendMessage(":warning: **The syntax of the command is incorrect**: Usage: " + Util
+                    .wrapInCodeBlock(getTrigger() + " " + commandUsageManual.get().getUsage()))
+                    .exceptionally(Javacord::exceptionLogger);
             return;
         }
         Thread commandThread = new Thread(() -> {
