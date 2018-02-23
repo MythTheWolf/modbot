@@ -96,6 +96,9 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
         for (EventType I : EventType.values()) {
             this.pluginEvents.put(I, new ArrayList<>());
         }
+        for (ManualType I : ManualType.values()) {
+            this.manualPages.put(I, new ArrayList<>());
+        }
         onEnable();
     }
 

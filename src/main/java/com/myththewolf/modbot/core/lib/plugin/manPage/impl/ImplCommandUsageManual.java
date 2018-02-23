@@ -30,6 +30,7 @@ import de.btobastian.javacord.entities.message.embed.EmbedBuilder;
 import org.json.JSONObject;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -43,7 +44,7 @@ public class ImplCommandUsageManual implements CommandUsageManual {
     /**
      * The list of messages that are mapped to this manual page
      */
-    private List<ManualPageEmbed> messageList;
+    private List<ManualPageEmbed> messageList = new ArrayList<>();
     /**
      * The plugin that this manual is mapped to
      */
@@ -55,7 +56,7 @@ public class ImplCommandUsageManual implements CommandUsageManual {
     /**
      * Gets the mapped commands
      */
-    private List<String> mappedCommands;
+    private List<String> mappedCommands = new ArrayList<>();
     private String synopsis = "";
     private PluginManager pluginManager;
 
