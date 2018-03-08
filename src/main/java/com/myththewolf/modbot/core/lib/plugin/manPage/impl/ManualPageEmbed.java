@@ -23,8 +23,11 @@ import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.PluginManualPag
 import de.btobastian.javacord.Javacord;
 import de.btobastian.javacord.entities.channels.TextChannel;
 import de.btobastian.javacord.entities.message.Message;
+import de.btobastian.javacord.entities.message.Reaction;
 import de.btobastian.javacord.entities.message.embed.EmbedBuilder;
+import de.btobastian.javacord.entities.message.emoji.Emoji;
 
+import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -52,10 +55,15 @@ public class ManualPageEmbed {
      */
     private Message message;
 
+    private Reaction GO_BACK_REACTION;
+
+
+    private Reaction GO_FORWARD_REACTIOn;
     /**
      * Constructs a ManualPageEmbed
+     *
      * @param manualPage The manual to show
-     * @param scope Where to show it
+     * @param scope      Where to show it
      */
     public ManualPageEmbed(PluginManualPage manualPage, TextChannel scope) {
         this.manual = manualPage;
@@ -64,6 +72,7 @@ public class ManualPageEmbed {
 
     /**
      * Gets the manual type
+     *
      * @return The type
      */
     public ManualType getType() {
@@ -78,13 +87,19 @@ public class ManualPageEmbed {
                 .getPageOf(0) instanceof EmbedBuilder ? channel
                 .sendMessage((EmbedBuilder) manual.getPageOf(0)) : channel
                 .sendMessage((String) manual.getPageOf(0)));
-        dummy.thenAccept(message1 -> message = message1).exceptionally(Javacord::exceptionLogger);
-        spot = 0;
-        currentPage = manual.getPageOf(0);
+        dummy.thenAccept(message1 -> {
+            spot = 0;
+            currentPage = manual.getPageOf(0);
+            this.message = message1;
+            //TODO: Add arrow reactions
+        }).exceptionally(Javacord::exceptionLogger);
+
+
     }
 
     /**
      * Gets the current page,but as the array index
+     *
      * @return The array index of the current page
      */
     public int getSpot() {
@@ -93,6 +108,7 @@ public class ManualPageEmbed {
 
     /**
      * Gets the current manual page being displayed
+     *
      * @return The page, either a String or EmbedBuilder
      */
     public Object getCurrentPage() {
@@ -101,6 +117,7 @@ public class ManualPageEmbed {
 
     /**
      * Gets the current channel the manual is being displayed on
+     *
      * @return The text channel
      */
     public TextChannel getChannel() {
@@ -109,6 +126,7 @@ public class ManualPageEmbed {
 
     /**
      * Gets the manual being displayed
+     *
      * @return The manual
      */
     public PluginManualPage getManual() {
@@ -117,10 +135,20 @@ public class ManualPageEmbed {
 
     /**
      * Gets the manual page's embed but as a message
+     *
      * @return The message
      */
     public Message getMessage() {
         return message;
+    }
+
+    /**
+     * Sets the spot of this page
+     * @param page
+     */
+    public void setCurrentPage(int page) {
+        spot = page;
+        getMessage().edit((EmbedBuilder) getManual().getPageOf(page)).exceptionally(Javacord::exceptionLogger);
     }
 
     /**

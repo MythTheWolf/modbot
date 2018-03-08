@@ -117,8 +117,10 @@ public class ImplCommandUsageManual implements CommandUsageManual {
     }
 
     @Override
-    public void displayNewEmbed(TextChannel scope) {
-
+    public ManualPageEmbed displayNewEmbed(TextChannel scope) {
+            ManualPageEmbed manualPageEmbed = new ManualPageEmbed(this,scope);
+            manualPageEmbed.instaniateEmbed();
+            return manualPageEmbed;
     }
 
     @Override

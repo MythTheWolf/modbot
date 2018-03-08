@@ -63,6 +63,7 @@ public interface PluginManualPage {
 
     /**
      * Displays a new Embed for this manual page
+     * @return The newly created manual page embed
      */
-    void displayNewEmbed(TextChannel scope);
+    ManualPageEmbed displayNewEmbed(TextChannel scope);
 }
