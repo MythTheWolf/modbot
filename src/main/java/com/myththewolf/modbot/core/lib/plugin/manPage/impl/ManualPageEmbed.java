@@ -20,14 +20,12 @@ package com.myththewolf.modbot.core.lib.plugin.manPage.impl;
 
 import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.ManualType;
 import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.PluginManualPage;
-import de.btobastian.javacord.Javacord;
-import de.btobastian.javacord.entities.channels.TextChannel;
-import de.btobastian.javacord.entities.message.Message;
-import de.btobastian.javacord.entities.message.Reaction;
-import de.btobastian.javacord.entities.message.embed.EmbedBuilder;
-import de.btobastian.javacord.entities.message.emoji.Emoji;
+import org.javacord.api.entity.channel.TextChannel;
+import org.javacord.api.entity.message.Message;
+import org.javacord.api.entity.message.Reaction;
+import org.javacord.api.entity.message.embed.EmbedBuilder;
+import org.javacord.api.util.logging.ExceptionLogger;
 
-import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -83,7 +81,7 @@ public class ManualPageEmbed {
      * Creates a new message with page 1 of the manual displayed
      */
     public void instaniateEmbed() {
-        CompletableFuture<de.btobastian.javacord.entities.message.Message> dummy = (manual
+        CompletableFuture<Message> dummy = (manual
                 .getPageOf(0) instanceof EmbedBuilder ? channel
                 .sendMessage((EmbedBuilder) manual.getPageOf(0)) : channel
                 .sendMessage((String) manual.getPageOf(0)));
@@ -92,7 +90,7 @@ public class ManualPageEmbed {
             currentPage = manual.getPageOf(0);
             this.message = message1;
             //TODO: Add arrow reactions
-        }).exceptionally(Javacord::exceptionLogger);
+        }).exceptionally(ExceptionLogger.get());
 
 
     }
@@ -148,13 +146,13 @@ public class ManualPageEmbed {
      */
     public void setCurrentPage(int page) {
         spot = page;
-        getMessage().edit((EmbedBuilder) getManual().getPageOf(page)).exceptionally(Javacord::exceptionLogger);
+        getMessage().edit((EmbedBuilder) getManual().getPageOf(page)).exceptionally(ExceptionLogger.get());
     }
 
     /**
      * Deletes the message with this embed
      */
     public void destroy() {
-        getMessage().delete().exceptionally(Javacord::exceptionLogger);
+        getMessage().delete().exceptionally(ExceptionLogger.get());
     }
 }

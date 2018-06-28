@@ -24,6 +24,5 @@ public class PluginLoaderTest {
     public void testJarLoader() {
         String[] args = {"--nobot"};
         ModBotCoreLoader.main(args);
-
     }
 }

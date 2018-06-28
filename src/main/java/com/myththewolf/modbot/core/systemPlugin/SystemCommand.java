@@ -18,8 +18,8 @@
 
 package com.myththewolf.modbot.core.systemPlugin;
 
-import de.btobastian.javacord.entities.message.Message;
-import de.btobastian.javacord.entities.message.MessageAuthor;
+import org.javacord.api.entity.message.Message;
+import org.javacord.api.entity.message.MessageAuthor;
 
 public interface SystemCommand {
     void onCommand(MessageAuthor author, Message message);

@@ -20,11 +20,11 @@ package com.myththewolf.modbot.core.API.command.interfaces;
 
 
 import com.myththewolf.modbot.core.lib.plugin.invocation.impl.BotPlugin;
-import de.btobastian.javacord.Javacord;
-import de.btobastian.javacord.entities.channels.TextChannel;
-import de.btobastian.javacord.entities.message.Message;
-import de.btobastian.javacord.entities.message.MessageAuthor;
-import de.btobastian.javacord.entities.message.embed.EmbedBuilder;
+import org.javacord.api.entity.channel.TextChannel;
+import org.javacord.api.entity.message.Message;
+import org.javacord.api.entity.message.MessageAuthor;
+import org.javacord.api.entity.message.embed.EmbedBuilder;
+import org.javacord.api.util.logging.ExceptionLogger;
 
 import java.awt.*;
 import java.util.Optional;
@@ -66,7 +66,7 @@ public abstract class CommandExecutor implements CommandAdapater {
      * @param content The message to be sent
      */
     public void reply(String content) {
-        getLastTextChannel().sendMessage(content).exceptionally(Javacord::exceptionLogger);
+        getLastTextChannel().sendMessage(content).exceptionally(ExceptionLogger.get());
     }
 
     /**
@@ -75,7 +75,7 @@ public abstract class CommandExecutor implements CommandAdapater {
      * @param embedBuilder The message embed to be sent
      */
     public void reply(EmbedBuilder embedBuilder) {
-        getLastTextChannel().sendMessage(embedBuilder).exceptionally(Javacord::exceptionLogger);
+        getLastTextChannel().sendMessage(embedBuilder).exceptionally(ExceptionLogger.get());
     }
 
     /**
@@ -131,7 +131,7 @@ public abstract class CommandExecutor implements CommandAdapater {
      * Deletes the message that triggered this command.
      */
     public void deleteTriggerMessage() {
-        getLastMessage().delete().exceptionally(Javacord::exceptionLogger);
+        getLastMessage().delete().exceptionally(ExceptionLogger.get());
     }
 
     /**

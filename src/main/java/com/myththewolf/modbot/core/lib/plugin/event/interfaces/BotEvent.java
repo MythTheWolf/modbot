@@ -19,8 +19,9 @@
 package com.myththewolf.modbot.core.lib.plugin.event.interfaces;
 
 import com.myththewolf.modbot.core.lib.plugin.invocation.impl.BotPlugin;
-import de.btobastian.javacord.entities.Server;
-import de.btobastian.javacord.entities.User;
+import org.javacord.api.entity.server.Server;
+import org.javacord.api.entity.user.User;
+
 
 import java.util.Optional;
 
@@ -35,6 +36,7 @@ public interface BotEvent {
      * @return User optional
      */
     Optional<User> getUser();
+
 
     /**
      * Gets the server this event fired in

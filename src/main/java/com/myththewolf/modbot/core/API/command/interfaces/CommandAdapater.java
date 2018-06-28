@@ -19,9 +19,9 @@
 package com.myththewolf.modbot.core.API.command.interfaces;
 
 
-import de.btobastian.javacord.entities.channels.TextChannel;
-import de.btobastian.javacord.entities.message.Message;
-import de.btobastian.javacord.entities.message.MessageAuthor;
+import org.javacord.api.entity.channel.TextChannel;
+import org.javacord.api.entity.message.Message;
+import org.javacord.api.entity.message.MessageAuthor;
 
 /**
  * The interface in which command classes should implement

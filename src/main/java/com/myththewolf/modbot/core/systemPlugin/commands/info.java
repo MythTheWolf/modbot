@@ -21,10 +21,12 @@ package com.myththewolf.modbot.core.systemPlugin.commands;
 import com.myththewolf.modbot.core.lib.plugin.invocation.impl.BotPlugin;
 import com.myththewolf.modbot.core.lib.plugin.invocation.interfaces.PluginManager;
 import com.myththewolf.modbot.core.systemPlugin.SystemCommand;
-import de.btobastian.javacord.Javacord;
-import de.btobastian.javacord.entities.message.Message;
-import de.btobastian.javacord.entities.message.MessageAuthor;
-import de.btobastian.javacord.entities.message.embed.EmbedBuilder;
+import org.javacord.api.Javacord;
+import org.javacord.api.entity.message.Message;
+import org.javacord.api.entity.message.MessageAuthor;
+import org.javacord.api.entity.message.embed.EmbedBuilder;
+import org.javacord.api.util.logging.ExceptionLogger;
+
 
 import java.awt.*;
 
@@ -49,6 +51,6 @@ public class info implements SystemCommand {
         manager.getPlugins().forEach(plugin -> plList += plugin.getPluginName() + " ");
         infoEmbed.addField("Plugins:", plList, false);
         infoEmbed.setFooter(numPlugins + " loaded plugins, with " + numCommands + " total commands.");
-        message.getChannel().sendMessage(infoEmbed).exceptionally(Javacord::exceptionLogger);
+        message.getChannel().sendMessage(infoEmbed).exceptionally(ExceptionLogger.get());
     }
 }

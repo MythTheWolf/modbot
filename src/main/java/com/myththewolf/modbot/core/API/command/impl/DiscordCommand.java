@@ -25,10 +25,12 @@ import com.myththewolf.modbot.core.lib.logging.Loggable;
 import com.myththewolf.modbot.core.lib.plugin.invocation.impl.BotPlugin;
 import com.myththewolf.modbot.core.lib.plugin.manPage.impl.ImplCommandUsageManual;
 import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.ManualType;
-import de.btobastian.javacord.Javacord;
-import de.btobastian.javacord.entities.channels.TextChannel;
-import de.btobastian.javacord.entities.message.Message;
-import de.btobastian.javacord.entities.message.MessageAuthor;
+import org.javacord.api.Javacord;
+import org.javacord.api.entity.channel.TextChannel;
+import org.javacord.api.entity.message.Message;
+import org.javacord.api.entity.message.MessageAuthor;
+import org.javacord.api.util.logging.ExceptionLogger;
+
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -98,7 +100,7 @@ public class DiscordCommand implements Loggable {
         if (commandUsageManual.isPresent() && args.length < commandUsageManual.get().getNumRequiredArgs()) {
             channel.sendMessage(":warning: **The syntax of the command is incorrect**: Usage: " + Util
                     .wrapInCodeBlock(getTrigger() + " " + commandUsageManual.get().getUsage()))
-                    .exceptionally(Javacord::exceptionLogger);
+                    .exceptionally(ExceptionLogger.get());
             return;
         }
         Thread commandThread = new Thread(() -> {

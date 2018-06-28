@@ -27,9 +27,9 @@ import com.myththewolf.modbot.core.lib.plugin.invocation.interfaces.PluginManage
 import com.myththewolf.modbot.core.systemPlugin.commands.disablePlugin;
 import com.myththewolf.modbot.core.systemPlugin.commands.info;
 import com.myththewolf.modbot.core.systemPlugin.commands.plugin;
-import de.btobastian.javacord.AccountType;
-import de.btobastian.javacord.DiscordApi;
-import de.btobastian.javacord.DiscordApiBuilder;
+import org.javacord.api.AccountType;
+import org.javacord.api.DiscordApi;
+import org.javacord.api.DiscordApiBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
