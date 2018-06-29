@@ -2,6 +2,7 @@
   "type": "COMMAND_SYNTAX",
   "for": "!boop",
   "description": "A command that boops someone!",
+  "synopsis": "This is a command that you use when you want to boop someone, especially if they are cute!",
   "arguments": [
     {
       "name": "person",
@@ -10,5 +11,6 @@
       "description": "The target to be booped",
       "embedColor": "RED"
     }
-  ]
+  ],
+  "related-commands": ["!bap","!rawr"]
 }

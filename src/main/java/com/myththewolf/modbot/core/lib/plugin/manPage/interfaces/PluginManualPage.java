@@ -66,4 +66,10 @@ public interface PluginManualPage {
      * @return The newly created manual page embed
      */
     ManualPageEmbed displayNewEmbed(TextChannel scope);
+
+    /**
+     * Returns the total number of pages
+     * @return The total number of pages
+     */
+    int getTotalNumberPages();
 }

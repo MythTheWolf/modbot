@@ -57,6 +57,7 @@ public class ManualPageEmbed {
 
 
     private Reaction GO_FORWARD_REACTIOn;
+
     /**
      * Constructs a ManualPageEmbed
      *
@@ -89,9 +90,10 @@ public class ManualPageEmbed {
             spot = 0;
             currentPage = manual.getPageOf(0);
             this.message = message1;
-            //TODO: Add arrow reactions
+            this.message.addReaction("◀").exceptionally(ExceptionLogger.get());
+            this.message.addReaction("❌").exceptionally(ExceptionLogger.get());
+            this.message.addReaction("▶").exceptionally(ExceptionLogger.get());
         }).exceptionally(ExceptionLogger.get());
-
 
     }
 
@@ -111,6 +113,16 @@ public class ManualPageEmbed {
      */
     public Object getCurrentPage() {
         return currentPage;
+    }
+
+    /**
+     * Sets the spot of this page
+     *
+     * @param page
+     */
+    public void setCurrentPage(int page) {
+        spot = page;
+        getMessage().edit((EmbedBuilder) getManual().getPageOf(page)).exceptionally(ExceptionLogger.get());
     }
 
     /**
@@ -140,13 +152,19 @@ public class ManualPageEmbed {
         return message;
     }
 
-    /**
-     * Sets the spot of this page
-     * @param page
-     */
-    public void setCurrentPage(int page) {
-        spot = page;
-        getMessage().edit((EmbedBuilder) getManual().getPageOf(page)).exceptionally(ExceptionLogger.get());
+    public void incrementPage() {
+        Object result = getManual().getPageOf(getSpot() + 1);
+        if (result == null) {
+            setCurrentPage(0);
+        }
+    }
+
+    public void decementPage() {
+        Object result = getManual().getPageOf(getSpot() - 1);
+        if (result == null) {
+            setCurrentPage(getManual().getTotalNumberPages());
+        }
+
     }
 
     /**

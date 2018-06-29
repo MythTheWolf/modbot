@@ -33,9 +33,11 @@
     </repositories>
     <dependencies>
         <dependency>
-            <groupId>com.github.BtoBastian.Javacord</groupId>
+            <groupId>de.btobastian.Javacord</groupId>
             <artifactId>javacord</artifactId>
+            <!-- See below what to insert here -->
             <version>01ca3c4</version>
+            <type>pom</type>
         </dependency>
         <!-- https://mvnrepository.com/artifact/junit/junit -->
         <dependency>

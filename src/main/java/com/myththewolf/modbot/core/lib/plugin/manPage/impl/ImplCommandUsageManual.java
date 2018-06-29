@@ -23,8 +23,6 @@ import com.myththewolf.modbot.core.lib.Util;
 import com.myththewolf.modbot.core.lib.plugin.invocation.impl.BotPlugin;
 import com.myththewolf.modbot.core.lib.plugin.invocation.interfaces.PluginManager;
 import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.CommandUsageManual;
-
-
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.json.JSONObject;
@@ -68,7 +66,7 @@ public class ImplCommandUsageManual implements CommandUsageManual {
 
     @Override
     public List<ManualPageEmbed> getEmbeds() {
-        return null;
+        return messageList;
     }
 
     @Override
@@ -90,6 +88,10 @@ public class ImplCommandUsageManual implements CommandUsageManual {
 
     @Override
     public Object getPageOf(int index) {
+        if(index <0 || index>getTotalNumberPages()){
+            return null;
+        }
+        int arguments_end  = dataJsonObject.getJSONArray("arguments").length()+1;
         if (index == 0) {
             EmbedBuilder builder = new EmbedBuilder();
             builder.setTitle("Command Details");
@@ -98,11 +100,13 @@ public class ImplCommandUsageManual implements CommandUsageManual {
             builder.addField("**DESCRIPTION**", Util.wrapInCodeBlock(dataJsonObject.getString("description")), false);
             builder.setColor(Color.MAGENTA);
             return builder;
-        } else if (dataJsonObject.getJSONArray("arguments").length() - 1 <= index) {
+        }
+
+        if(index < arguments_end){
             EmbedBuilder argumentEmbed = new EmbedBuilder();
-            argumentEmbed.setColor(((JSONObject) dataJsonObject.getJSONArray("arguments").get(index - 1))
+            argumentEmbed.setColor(((JSONObject) dataJsonObject.getJSONArray("arguments").get(index))
                     .isNull("embedColor") ? Color.GRAY : Util.getColorByName("embedColor"));
-            JSONObject argument = (JSONObject) dataJsonObject.getJSONArray("arguments").get(index - 1);
+            JSONObject argument = (JSONObject) dataJsonObject.getJSONArray("arguments").get(index);
             argumentEmbed.addField("**NAME**", Util.wrapInCodeBlock(argument.getString("name")), false);
             argumentEmbed.addField("**REQUIRED**", Util.wrapInCodeBlock(argument.getString("required")), false);
             argumentEmbed.addField("**TYPE**", Util.wrapInCodeBlock(argument.getString("type")), false);
@@ -119,9 +123,18 @@ public class ImplCommandUsageManual implements CommandUsageManual {
 
     @Override
     public ManualPageEmbed displayNewEmbed(TextChannel scope) {
-            ManualPageEmbed manualPageEmbed = new ManualPageEmbed(this,scope);
-            manualPageEmbed.instaniateEmbed();
-            return manualPageEmbed;
+        ManualPageEmbed manualPageEmbed = new ManualPageEmbed(this, scope);
+        manualPageEmbed.instaniateEmbed();
+        messageList.add(manualPageEmbed);
+        return manualPageEmbed;
+    }
+
+    @Override
+    public int getTotalNumberPages() {
+        int start = 1;
+        start += dataJsonObject.getJSONArray("arguments").length();
+        start += dataJsonObject.getJSONArray("related-commands").length();
+        return start;
     }
 
     @Override

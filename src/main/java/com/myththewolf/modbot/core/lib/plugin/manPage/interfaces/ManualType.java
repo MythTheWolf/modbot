@@ -24,6 +24,11 @@ package com.myththewolf.modbot.core.lib.plugin.manPage.interfaces;
 public enum ManualType {
     /**
      * A syntax manual. This should include the command itslef,arguments,permissions and use cases.
+     * <br />
+     * ---PAGE LAYOUT:--- <br />
+     *  0: Index, general info <br />
+     *  1 thru arguments.length(): Argument pages <br />
+     *  (1+arguments.length()) thru (1+arguments.length()+related-commands.length()): Related commands length
      */
     COMMAND_SYNTAX,
     /**
