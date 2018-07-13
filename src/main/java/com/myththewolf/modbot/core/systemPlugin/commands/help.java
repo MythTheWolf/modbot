@@ -18,6 +18,8 @@
 
 package com.myththewolf.modbot.core.systemPlugin.commands;
 
+import com.myththewolf.modbot.core.lib.Util;
+import com.myththewolf.modbot.core.lib.logging.Loggable;
 import com.myththewolf.modbot.core.lib.plugin.invocation.impl.BotPlugin;
 import com.myththewolf.modbot.core.lib.plugin.invocation.interfaces.PluginManager;
 import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.PluginManualPage;
@@ -29,7 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-public class help implements SystemCommand {
+public class help implements SystemCommand,Loggable {
     PluginManager manager;
 
     public help(PluginManager pl) {
@@ -47,7 +49,13 @@ public class help implements SystemCommand {
            return;
        }
        pageOptional.ifPresent(page -> {
-
+           if(args.length < 2){
+               page.displayNewEmbed(message.getChannel(), 0);
+           }else{
+               int start = Util.isNumber(args[1]) ? Integer.parseInt(args[1]) > page.getTotalNumberPages() ? 0 : Integer.parseInt(args[1]) : 0;
+               getLogger().info(start+"");
+               page.displayNewEmbed(message.getChannel(), start);
+           }
        });
     }
 }

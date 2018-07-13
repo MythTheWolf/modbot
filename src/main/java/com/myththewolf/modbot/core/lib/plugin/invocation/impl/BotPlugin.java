@@ -153,11 +153,19 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
      * Sets this plugin as disabled, unregistering all commands and events. Also invokes @link{BotPlugin#onDisable}
      */
     public void disablePlugin() {
+        getLogger().debug("Disabling plugin: {}",getPluginName());
         this.pluginCommands = new HashMap<>();
+        this.pluginEvents = new HashMap<>();
         this.enabled = false;
         onDisable();
     }
-
+    public void enablePlugin(){
+        getLogger().debug("Enabling plugin: {}",getPluginName());
+        this.pluginCommands = new HashMap<>();
+        this.pluginEvents = new HashMap<>();
+        this.enabled = true;
+        onEnable();
+    }
     /**
      * Returns the class loader of this plugin
      *
@@ -313,6 +321,18 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
         List<PluginManualPage> finalList = new ArrayList<>();
         this.manualPages.entrySet().stream().map(Map.Entry::getValue).forEach(finalList::addAll);
         return finalList;
+    }
+    public void saveConfig(JSONObject root){
+        File conf = new File(getDataFolder().get().getAbsolutePath()+File.separator+"config.json");
+        Util.writeToFile(root.toString(4),conf);
+    }
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof BotPlugin && ((BotPlugin) obj).getClassLoader().equals(getClassLoader());
     }
 }
 

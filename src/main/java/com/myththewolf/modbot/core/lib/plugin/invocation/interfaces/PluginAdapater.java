@@ -31,4 +31,5 @@ public interface PluginAdapater {
      * This method is ran when the extending plugin is disabled
      */
     void onDisable();
+
 }
