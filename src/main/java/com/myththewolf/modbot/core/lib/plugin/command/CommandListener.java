@@ -19,6 +19,7 @@
 package com.myththewolf.modbot.core.lib.plugin.command;
 
 import com.myththewolf.modbot.core.API.command.impl.DiscordCommand;
+import com.myththewolf.modbot.core.ModBotCoreLoader;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
 import com.myththewolf.modbot.core.lib.plugin.event.impl.UserCommandEvent;
 import com.myththewolf.modbot.core.lib.plugin.event.interfaces.EventHandler;
@@ -26,9 +27,11 @@ import com.myththewolf.modbot.core.lib.plugin.event.interfaces.EventType;
 import com.myththewolf.modbot.core.lib.plugin.invocation.impl.BotPlugin;
 import com.myththewolf.modbot.core.lib.plugin.invocation.impl.ImplPluginLoader;
 import com.myththewolf.modbot.core.lib.plugin.invocation.interfaces.PluginManager;
+import org.javacord.api.Javacord;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
+import org.javacord.api.util.logging.ExceptionLogger;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -56,18 +59,23 @@ public class CommandListener implements MessageCreateListener, Loggable {
     public CommandListener(PluginManager manager) {
         this.manager = manager;
     }
-
+    boolean isSystemCommand;
     @Override
     public void onMessageCreate(MessageCreateEvent messageCreateEvent) {
-
+        if(!messageCreateEvent.getMessage().getContent().startsWith(ModBotCoreLoader.COMMAND_KEY)){
+            return;
+        }
         isValidCommand = false;
+        isSystemCommand = false;
         Thread.currentThread().setName("Events");
         Message message = messageCreateEvent.getMessage();
         String[] content = message.getContent().split(" ");
+        content[0] = content[0].substring(ModBotCoreLoader.COMMAND_KEY.length());
         manager.getPlugins().stream().map(BotPlugin::getCommands).flatMap(List::stream)
                 .filter((DiscordCommand cmd) -> (cmd.getTrigger().equals(content[0]) || content[0]
                         .equals(cmd.getParentPlugin().getPluginName() + ":" + cmd.getTrigger()))
                 ).forEachOrdered(discordCommand -> {
+
             discordCommand
                     .invokeCommand(messageCreateEvent.getChannel(), messageCreateEvent.getMessage()
                             .getAuthor(), messageCreateEvent.getMessage());
@@ -79,7 +87,9 @@ public class CommandListener implements MessageCreateListener, Loggable {
                 getLogger().info("{} ran a system command: {}", messageCreateEvent.getMessage().getAuthor()
                         .getName(), key);
                 val.onCommand(messageCreateEvent.getMessage().getAuthor(), messageCreateEvent.getMessage());
+                isSystemCommand = true;
             }
+
         });
         if (isValidCommand) {
             manager.getPlugins().stream().flatMap(plugin -> plugin.getEventsOfType(EventType.COMMAND_RUN).stream())
@@ -102,6 +112,11 @@ public class CommandListener implements MessageCreateListener, Loggable {
                             }
                         }
                     });
+        }
+
+        if(!isSystemCommand && !isValidCommand){
+            message.getChannel().sendMessage(content[0]+": Command not found").exceptionally(ExceptionLogger.get());
+            return;
         }
     }
 

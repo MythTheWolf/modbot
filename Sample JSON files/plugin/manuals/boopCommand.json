@@ -2,14 +2,15 @@
   "type": "COMMAND_SYNTAX",
   "for": "!boop",
   "description": "A command that boops someone!",
-  "synopsis": "This is a command that you use when you want to boop someone, especially if they are cute!",
+  "syntax": "!boop [theSnoot]",
   "arguments": [
     {
       "name": "person",
       "type": "A user mention",
       "required": true,
       "description": "The target to be booped",
-      "embedColor": "RED"
+      "embedColor": "RED",
+      "type":"STRING"
     }
   ],
   "related-commands": ["!bap","!rawr"]

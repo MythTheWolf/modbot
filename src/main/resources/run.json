@@ -1,5 +1,7 @@
 {
+  "command-frontend":"~$",
   "ownerID": "",
   "botToken": "",
-  "logLevel": ""
+  "logLevel": "INFO",
+  "manager-roles":[]
 }

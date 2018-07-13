@@ -16,15 +16,16 @@
  *
  */
 
-package com.myththewolf.modbot.core.lib.plugin.manPage.impl;
+package com.myththewolf.modbot.core.lib.plugin.manPage.CommandUsage;
 
 import com.myththewolf.modbot.core.API.command.impl.DiscordCommand;
 import com.myththewolf.modbot.core.lib.Util;
 import com.myththewolf.modbot.core.lib.plugin.invocation.impl.BotPlugin;
 import com.myththewolf.modbot.core.lib.plugin.invocation.interfaces.PluginManager;
-import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.CommandUsageManual;
+import com.myththewolf.modbot.core.lib.plugin.manPage.impl.ManualPageEmbed;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.awt.*;
@@ -55,7 +56,8 @@ public class ImplCommandUsageManual implements CommandUsageManual {
      * Gets the mapped commands
      */
     private List<String> mappedCommands = new ArrayList<>();
-    private String synopsis = "";
+    private String syntax = "";
+    private String synopsis;
     private PluginManager pluginManager;
 
     public ImplCommandUsageManual(PluginManager manager, BotPlugin plugin, JSONObject dataJsonObject) {
@@ -88,42 +90,66 @@ public class ImplCommandUsageManual implements CommandUsageManual {
 
     @Override
     public Object getPageOf(int index) {
-        if(index <0 || index>getTotalNumberPages()){
+        if (index < 0 || index > getTotalNumberPages()) {
             return null;
         }
-        int arguments_end  = dataJsonObject.getJSONArray("arguments").length()+1;
+        int arguments_end = dataJsonObject.getJSONArray("arguments").length() + 1;
         if (index == 0) {
             EmbedBuilder builder = new EmbedBuilder();
+            StringBuilder build = new StringBuilder(dataJsonObject.getString("for"));
+            dataJsonObject.getJSONArray("arguments").forEach(arg -> {
+                JSONObject argument = (JSONObject) arg;
+                syntax = syntax.replace(argument.getString("name"), argument.getBoolean("required") ? "<" + argument.getString("name") + ">" : "[" + argument
+                        .getString("name") + "]");
+            });
             builder.setTitle("Command Details");
             builder.addField("**NAME**", Util.wrapInCodeBlock(getPageName()), false);
-            builder.addField("**SYNTAX**", Util.wrapInCodeBlock(getPageName()), false);
+            builder.addField("**SYNTAX**", Util.wrapInCodeBlock(getUsage()), false);
             builder.addField("**DESCRIPTION**", Util.wrapInCodeBlock(dataJsonObject.getString("description")), false);
             builder.setColor(Color.MAGENTA);
             return builder;
         }
 
-        if(index < arguments_end){
+        if (index < arguments_end) {
             EmbedBuilder argumentEmbed = new EmbedBuilder();
-            argumentEmbed.setColor(((JSONObject) dataJsonObject.getJSONArray("arguments").get(index))
-                    .isNull("embedColor") ? Color.GRAY : Util.getColorByName("embedColor"));
-            JSONObject argument = (JSONObject) dataJsonObject.getJSONArray("arguments").get(index);
+            argumentEmbed.setColor(((JSONObject) dataJsonObject.getJSONArray("arguments").get(index - 1))
+                    .isNull("embedColor") ? Color.GRAY : Util
+                    .getColorByName(((JSONObject) dataJsonObject.getJSONArray("arguments").get(index - 1))
+                            .getString("embedColor")));
+            JSONObject argument = (JSONObject) dataJsonObject.getJSONArray("arguments").get(index - 1);
+            argumentEmbed.setTitle("Command argument Details:" + dataJsonObject.getString("syntax")
+                    .replace(argument.getString("name"), "__[" + argument.getString("name") + "]__"));
             argumentEmbed.addField("**NAME**", Util.wrapInCodeBlock(argument.getString("name")), false);
-            argumentEmbed.addField("**REQUIRED**", Util.wrapInCodeBlock(argument.getString("required")), false);
+            argumentEmbed.addField("**DESCRIPTION**", Util.wrapInCodeBlock(argument.getString("description")), false);
+            argumentEmbed.addField("**REQUIRED**", Util
+                    .wrapInCodeBlock(Boolean.toString(argument.getBoolean("required"))), false);
             argumentEmbed.addField("**TYPE**", Util.wrapInCodeBlock(argument.getString("type")), false);
-            argumentEmbed.setDescription(Util.wrapInCodeBlock(argument.getString("description")));
             return argumentEmbed;
+        }
+        if(index > arguments_end){
+            //TODO: Implement related commands
+            //TODO: Add aliases
         }
         return null;
     }
 
+
     @Override
     public int getNumRequiredArgs() {
-        return dataJsonObject.getJSONArray("arguments").length();
+        int num = 0;
+         JSONArray arr= dataJsonObject.getJSONArray("arguments");
+        for(int i =0; i<arr.length()-1; i++){
+            JSONObject ob = (JSONObject) arr.getJSONObject(i);
+            if(ob.getBoolean("required")){
+                num++;
+            }
+        }
+        return num;
     }
 
     @Override
-    public ManualPageEmbed displayNewEmbed(TextChannel scope) {
-        ManualPageEmbed manualPageEmbed = new ManualPageEmbed(this, scope);
+    public ManualPageEmbed displayNewEmbed(TextChannel scope,int startPage) {
+        ManualPageEmbed manualPageEmbed = new ManualPageEmbed(this, scope,startPage);
         manualPageEmbed.instaniateEmbed();
         messageList.add(manualPageEmbed);
         return manualPageEmbed;
@@ -138,6 +164,11 @@ public class ImplCommandUsageManual implements CommandUsageManual {
     }
 
     @Override
+    public void removeEmebed(ManualPageEmbed embed) {
+        this.messageList.remove(embed);
+    }
+
+    @Override
     public String getUsage() {
         synopsis = "";
         dataJsonObject.getJSONArray("arguments").forEach(o -> {
@@ -145,6 +176,17 @@ public class ImplCommandUsageManual implements CommandUsageManual {
             synopsis += " " + (argument.getBoolean("required") ? "<" + argument
                     .getString("name") + ">" : "[" + argument.getString("name") + "]");
         });
+        return getCommand().getTrigger()+" " +synopsis;
+    }
+    public String getRawUsage(){
+        synopsis = "";
+        dataJsonObject.getJSONArray("arguments").forEach(o -> {
+            JSONObject argument = (JSONObject) o;
+            synopsis += argument.getString("name") +" ";
+        });
         return synopsis;
+    }
+    public JSONObject getDataJsonObject() {
+        return dataJsonObject;
     }
 }

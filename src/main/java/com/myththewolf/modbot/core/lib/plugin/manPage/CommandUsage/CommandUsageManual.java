@@ -16,9 +16,11 @@
  *
  */
 
-package com.myththewolf.modbot.core.lib.plugin.manPage.interfaces;
+package com.myththewolf.modbot.core.lib.plugin.manPage.CommandUsage;
 
 import com.myththewolf.modbot.core.API.command.impl.DiscordCommand;
+import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.ManualType;
+import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.PluginManualPage;
 
 /**
  * This interface represents a command usage/syntax manual.

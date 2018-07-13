@@ -64,9 +64,10 @@ public class ManualPageEmbed {
      * @param manualPage The manual to show
      * @param scope      Where to show it
      */
-    public ManualPageEmbed(PluginManualPage manualPage, TextChannel scope) {
+    public ManualPageEmbed(PluginManualPage manualPage, TextChannel scope,int startPage) {
         this.manual = manualPage;
         this.channel = scope;
+        this.spot = startPage;
     }
 
     /**
@@ -83,12 +84,12 @@ public class ManualPageEmbed {
      */
     public void instaniateEmbed() {
         CompletableFuture<Message> dummy = (manual
-                .getPageOf(0) instanceof EmbedBuilder ? channel
-                .sendMessage((EmbedBuilder) manual.getPageOf(0)) : channel
-                .sendMessage((String) manual.getPageOf(0)));
+                .getPageOf(spot) instanceof EmbedBuilder ? channel
+                .sendMessage((EmbedBuilder) manual.getPageOf(getSpot())) : channel
+                .sendMessage((String) manual.getPageOf(getSpot())));
         dummy.thenAccept(message1 -> {
-            spot = 0;
-            currentPage = manual.getPageOf(0);
+            spot = spot;
+            currentPage = manual.getPageOf(spot);
             this.message = message1;
             this.message.addReaction("◀").exceptionally(ExceptionLogger.get());
             this.message.addReaction("❌").exceptionally(ExceptionLogger.get());
@@ -156,15 +157,18 @@ public class ManualPageEmbed {
         Object result = getManual().getPageOf(getSpot() + 1);
         if (result == null) {
             setCurrentPage(0);
+            return;
         }
+        setCurrentPage(getSpot()+1);
     }
 
     public void decementPage() {
         Object result = getManual().getPageOf(getSpot() - 1);
         if (result == null) {
             setCurrentPage(getManual().getTotalNumberPages());
+            return;
         }
-
+        setCurrentPage(getSpot()-1);
     }
 
     /**
@@ -172,5 +176,11 @@ public class ManualPageEmbed {
      */
     public void destroy() {
         getMessage().delete().exceptionally(ExceptionLogger.get());
+        getManual().removeEmebed(this);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof ManualPageEmbed && ((ManualPageEmbed) obj).getMessage().getId() == getMessage().getId();
     }
 }

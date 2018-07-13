@@ -21,7 +21,8 @@ package com.myththewolf.modbot.core.lib.plugin.invocation.impl;
 import com.myththewolf.modbot.core.lib.Util;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
 import com.myththewolf.modbot.core.lib.plugin.invocation.interfaces.PluginManager;
-import com.myththewolf.modbot.core.lib.plugin.manPage.impl.ImplCommandUsageManual;
+import com.myththewolf.modbot.core.lib.plugin.manPage.CommandUsage.ImplCommandUsageManual;
+import com.myththewolf.modbot.core.lib.plugin.manPage.CommandUsage.ArgumentType;
 import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.ManualType;
 import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.PluginManualPage;
 import com.myththewolf.modbot.core.systemPlugin.SystemCommand;
@@ -201,15 +202,38 @@ public class ImplPluginLoader implements PluginManager, Loggable {
                     copyResourcesToDirectory(new JarFile(jar), "manPages", manDir.getAbsolutePath());
                 } catch (Exception e) {
                     getLogger()
-                            .warn("Could not copy manuals for plugin '{}' outside of JAR: {}", pluginName, pluginName);
+                            .warn("Could not copy manuals for plugin '{}' outside of JAR: {}", pluginName, e.getMessage());
                 }
-                Arrays.stream(manDir.listFiles()).filter(file -> file.getName().endsWith(".json"))
-                        .map(file -> Util.readFile(file).get()).map(JSONObject::new).forEach(parsedManual -> {
+                Arrays.stream(manDir.listFiles()).filter(file -> file.getName().endsWith(".json")).forEach(file -> {
+                    JSONObject parsedManual = new JSONObject(Util.readFile(file).get());
                     switch (parsedManual.getString("type")) {
                         case "COMMAND_SYNTAX":
-                            addManual(((BotPlugin) instance), ManualType.COMMAND_SYNTAX, parsedManual);
-                            break;
+                            boolean ok = true;
+                            String badType = "";
+                            Iterator I = parsedManual.getJSONArray("arguments").iterator();
+                            while (I.hasNext()) {
+                                JSONObject ob = (JSONObject) I.next();
+                                ok = isValidArguemtnType(ob.getString("type"));
+                                badType = ob.getString("type");
+                                if (!ok)
+                                    break;
+                            }
+                            if (!((BotPlugin) instance).getCommandMap().containsKey(parsedManual.getString("for"))) {
+                                getLogger()
+                                        .warn("Could not enable manual for command '{}', target command doesn't exist.", parsedManual
+                                                .getString("for"));
+                                break;
+                            } else if (!ok) {
+                                getLogger()
+                                        .warn("Could not enable manual for command '{}': '{}' is not a valid argument type.", parsedManual
+                                                .getString("for"), badType);
+                                break;
+                            } else {
+                                addManual(((BotPlugin) instance), ManualType.COMMAND_SYNTAX, parsedManual);
+                                break;
+                            }
                         default:
+                            getLogger().warn("Could not enable manual '{}': Invalid manual type '{}'.",file.getAbsolutePath(),parsedManual.getString("type"));
                             break;
                     }
                 });
@@ -268,5 +292,14 @@ public class ImplPluginLoader implements PluginManager, Loggable {
             default:
                 break;
         }
+    }
+
+    boolean isValidArguemtnType(String in) {
+        try {
+            ArgumentType argumentType = ArgumentType.valueOf(in);
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+        return true;
     }
 }

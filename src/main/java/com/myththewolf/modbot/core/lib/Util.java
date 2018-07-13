@@ -19,13 +19,19 @@
 package com.myththewolf.modbot.core.lib;
 
 import com.myththewolf.modbot.core.ModBotCoreLoader;
+import org.javacord.api.entity.message.Message;
+import org.javacord.api.entity.message.MessageAuthor;
+import org.javacord.api.entity.user.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.io.*;
 import java.net.URL;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Utils Class, contains random Utilities that will be used more than once
@@ -134,9 +140,9 @@ public class Util {
     public static String arrayToString(int startIndex,String[] array){
         String finalStr = "";
         for(int i=startIndex; i<array.length; i++){
-            finalStr += array[i];
+            finalStr += array[i] +" ";
         }
-        return finalStr;
+        return finalStr.trim();
     }
 
     /**
@@ -157,5 +163,30 @@ public class Util {
     public static String wrapInCodeBlock(String source) {
         return "```" + source + "```";
     }
+    public static String milisToTimeString(long l){
+        final long hr = TimeUnit.MILLISECONDS.toHours(l);
+        final long min = TimeUnit.MILLISECONDS.toMinutes(l - TimeUnit.HOURS.toMillis(hr));
+        final long sec = TimeUnit.MILLISECONDS.toSeconds(l - TimeUnit.HOURS.toMillis(hr) - TimeUnit.MINUTES.toMillis(min));
+        final long ms = TimeUnit.MILLISECONDS.toMillis(l - TimeUnit.HOURS.toMillis(hr) - TimeUnit.MINUTES.toMillis(min) - TimeUnit.SECONDS.toMillis(sec));
+        return String.format("%02d hours, %02d min, %02d sec, %03d ms", hr, min, sec, ms);
+    }
+
+    public static boolean canRunSupercommand(MessageAuthor author, Message message, ModBotCoreLoader loader){
+        String OWNER_ID = loader.getRunConfig().getString("ownerID");
+        List<Object> ids = loader.getRunConfig().getJSONArray("manager-roles").toList();
+        boolean isManager = author.asUser().get().getRoles(message.getServer().get()).stream().anyMatch(role -> ids.contains(role.getIdAsString()));
+        return isManager || author.getIdAsString().equals(OWNER_ID);
+    }
+
+    public static boolean isNumber(String in){
+        try {
+            Integer.parseInt(in);
+        }catch (Exception e){
+            return false;
+        }
+        return true;
+    }
+
+
 }
 
