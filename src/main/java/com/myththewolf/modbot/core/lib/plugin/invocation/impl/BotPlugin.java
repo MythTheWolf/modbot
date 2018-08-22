@@ -28,6 +28,7 @@ import com.myththewolf.modbot.core.lib.plugin.invocation.interfaces.PluginAdapat
 import com.myththewolf.modbot.core.lib.plugin.manPage.impl.ManualPageEmbed;
 import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.ManualType;
 import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.PluginManualPage;
+import org.javacord.api.DiscordApi;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -81,13 +82,15 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
     private HashMap<ManualType, List<PluginManualPage>> manualPages = new HashMap<>();
 
     private List<ManualPageEmbed> manualPageEmbeds = new ArrayList<>();
+
+    private DiscordApi api;
     /**
      * Sets up this BotPlugin, it is protected only to the system.
      *
      * @param runconfig The runconfig of the plugin
      * @param loader    The class loader used to import the plugin JAR
      */
-    protected void enablePlugin(JSONObject runconfig, URLClassLoader loader) {
+    protected void enablePlugin(JSONObject runconfig, URLClassLoader loader,DiscordApi api) {
         this.runconfig = runconfig;
         this.pluginName = runconfig.getString("pluginName");
         this.pluginVersion = runconfig.getString("pluginDescription");
@@ -101,6 +104,7 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
         for (ManualType I : ManualType.values()) {
             this.manualPages.put(I, new ArrayList<>());
         }
+        this.api = api;
         onEnable();
     }
 
@@ -330,6 +334,9 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
         return enabled;
     }
 
+    public DiscordApi getDiscordAPI(){
+        return api;
+    }
     @Override
     public boolean equals(Object obj) {
         return obj instanceof BotPlugin && ((BotPlugin) obj).getClassLoader().equals(getClassLoader());

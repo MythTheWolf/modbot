@@ -131,7 +131,7 @@ public class ModBotCoreLoader implements Loggable {
                     getLogger().info("Starting discord bot");
                     if(runConfig.isNull("botType") || !runConfig.getString("botType").equals("CLIENT")) {
                         discordApi = new DiscordApiBuilder().setAccountType(AccountType.BOT).setToken(runConfig.getString("botToken")).login().get();
-                        discordApi.updateActivity("for commands: "+COMMAND_KEY+"help",ActivityType.WATCHING);
+                        discordApi.updateActivity(ActivityType.WATCHING,"for commands: " + COMMAND_KEY+"help");
                     }else{
                         getLogger().warn("****YOU ARE USING A CLIENT TOKEN!****");
                         getLogger().warn("This is not advised and it can get you banned!");
@@ -143,7 +143,7 @@ public class ModBotCoreLoader implements Loggable {
                 }
 
 
-                PluginManager PM = new ImplPluginLoader();
+                PluginManager PM = new ImplPluginLoader(discordApi);
                 PM.loadDirectory(plugins);
                 if (ModBotCoreLoader.withoutBot) {
                     return;

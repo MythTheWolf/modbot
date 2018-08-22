@@ -18,12 +18,13 @@
 
 package com.myththewolf.modbot.core.lib.plugin.event.interfaces;
 
+import com.myththewolf.modbot.core.lib.plugin.event.impl.ImboundCommandEvent;
 import com.myththewolf.modbot.core.lib.plugin.event.impl.UserCommandEvent;
 
 public enum EventType {
 
-    COMMAND_RUN(UserCommandEvent.class);
-
+    COMMAND_RUN(UserCommandEvent.class),
+    IMBOUND_COMMAND(ImboundCommandEvent.class);
 
     Class dataClass;
 

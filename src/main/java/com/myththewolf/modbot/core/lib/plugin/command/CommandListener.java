@@ -21,6 +21,7 @@ package com.myththewolf.modbot.core.lib.plugin.command;
 import com.myththewolf.modbot.core.API.command.impl.DiscordCommand;
 import com.myththewolf.modbot.core.ModBotCoreLoader;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
+import com.myththewolf.modbot.core.lib.plugin.event.impl.ImboundCommandEvent;
 import com.myththewolf.modbot.core.lib.plugin.event.impl.UserCommandEvent;
 import com.myththewolf.modbot.core.lib.plugin.event.interfaces.EventHandler;
 import com.myththewolf.modbot.core.lib.plugin.event.interfaces.EventType;
@@ -71,15 +72,37 @@ public class CommandListener implements MessageCreateListener, Loggable {
         Message message = messageCreateEvent.getMessage();
         String[] content = message.getContent().split(" ");
         content[0] = content[0].substring(ModBotCoreLoader.COMMAND_KEY.length());
+
+
         manager.getPlugins().stream().map(BotPlugin::getCommands).flatMap(List::stream)
                 .filter((DiscordCommand cmd) -> (cmd.getTrigger().equals(content[0]) || content[0]
                         .equals(cmd.getParentPlugin().getPluginName() + ":" + cmd.getTrigger()))
                 ).forEachOrdered(discordCommand -> {
-
-            discordCommand
-                    .invokeCommand(messageCreateEvent.getChannel(), messageCreateEvent.getMessage()
-                            .getAuthor(), messageCreateEvent.getMessage());
-            isValidCommand = true;
+            ImboundCommandEvent commandEvent = new ImboundCommandEvent(message,discordCommand,messageCreateEvent.getMessage().getUserAuthor().get());
+            manager.getPlugins().stream().flatMap(plugin -> plugin.getEventsOfType(EventType.IMBOUND_COMMAND).stream()).forEachOrdered(runner -> {
+                Optional<Method> methodOptional = Arrays.stream(runner.getClass().getMethods())
+                        .filter(method -> method.isAnnotationPresent(EventHandler.class)).findAny();
+                if (!methodOptional.isPresent()) {
+                    getLogger()
+                            .warn("Could not pass event of type IMBOUND_COMMAND to class '{}', no runner method found", runner
+                                    .getClass().getName());
+                } else {
+                    try {
+                        methodOptional.get()
+                                .invoke(runner, commandEvent, runnerToBotPlugin(runner));
+                    } catch (Exception e) {
+                        getLogger()
+                                .error("Could not pass event of type IMBOUND_COMMAND to class '{}': Internal error! (Our fault): {}", runner
+                                        .getClass().getName(), e.getMessage());
+                    }
+                }
+            });
+            if(!commandEvent.isCancelled()){
+                discordCommand
+                        .invokeCommand(messageCreateEvent.getChannel(), messageCreateEvent.getMessage()
+                                .getAuthor(), messageCreateEvent.getMessage());
+                isValidCommand = true;
+            }
         });
 
         ((ImplPluginLoader) manager).getSystemCommands().forEach((key, val) -> {

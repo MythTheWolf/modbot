@@ -58,4 +58,6 @@ public interface BotEvent {
      * @return The plugin
      */
     BotPlugin getPlugin();
+
+    default void cancelEvent(){}
 }

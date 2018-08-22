@@ -98,4 +98,5 @@ public class UserCommandEvent implements BotEvent {
     public BotPlugin getPlugin() {
         return botPlugin;
     }
+
 }
