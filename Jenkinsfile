@@ -1,22 +1,25 @@
 pipeline {
-  agent any
+  agent {
+    docker {
+      image 'maven:3-alpine'
+      args '-v /root/.m2:/root/.m2'
+    }
+
+  }
   stages {
     stage('Build') {
       steps {
-        sh 'mvn clean install'
+        sh 'mvn -B -DskipTests clean package'
       }
     }
     stage('Test') {
       parallel {
         stage('Test') {
           steps {
-            catchError() {
-              sh 'mvn test'
-            }
-            
+            sh 'mvn test'
           }
         }
-        stage('Make docs') {
+        stage('Create Docs') {
           steps {
             sh 'mvn javadoc:javadoc'
           }
@@ -25,9 +28,8 @@ pipeline {
     }
     stage('Publish') {
       steps {
-        archiveArtifacts 'target/*'
-        sh '''rm -rf /var/www/mythserver/doc/modbot/*
-cp -r target/site/apidocs/* /var/www/mythserver/doc/modbot/'''
+        archiveArtifacts 'target/*.jar'
+     publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: false, reportDir: 'target/site/apidocs', reportFiles: 'index.html', reportName: 'JavaDoc', reportTitles: 'JavaDoc'])
       }
     }
   }
