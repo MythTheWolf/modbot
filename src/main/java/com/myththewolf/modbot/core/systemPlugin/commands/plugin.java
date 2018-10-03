@@ -20,23 +20,22 @@ package com.myththewolf.modbot.core.systemPlugin.commands;
 
 import com.myththewolf.modbot.core.ModBotCoreLoader;
 import com.myththewolf.modbot.core.lib.Util;
-import com.myththewolf.modbot.core.lib.plugin.invocation.impl.BotPlugin;
-import com.myththewolf.modbot.core.lib.plugin.invocation.interfaces.PluginManager;
+import com.myththewolf.modbot.core.lib.plugin.manager.impl.BotPlugin;
+import com.myththewolf.modbot.core.lib.plugin.manager.interfaces.PluginManager;
 import com.myththewolf.modbot.core.systemPlugin.SystemCommand;
-import com.sun.org.apache.xpath.internal.operations.Mod;
-import org.javacord.api.Javacord;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageAuthor;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.util.logging.ExceptionLogger;
 
 import java.awt.*;
-import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 public class plugin implements SystemCommand {
     private PluginManager pluginManager;
     private ModBotCoreLoader loader;
+
     public plugin(PluginManager manager, ModBotCoreLoader modBotCoreLoaderloader) {
         pluginManager = manager;
         loader = modBotCoreLoaderloader;
@@ -44,13 +43,13 @@ public class plugin implements SystemCommand {
 
     @Override
     public void onCommand(MessageAuthor author, Message message) {
-        if(!Util.canRunSupercommand(author,message,loader)){
+        if (!Util.canRunSupercommand(author, message, loader)) {
             message.getChannel().sendMessage(":thinking: You aren't the bot owner or a superuser!").exceptionally(ExceptionLogger.get());
             return;
         }
 
         if (message.getContent().split(" ").length < 2) {
-            message.getChannel().sendMessage(":warning: Usage: `mb.plugin [disable|enable|info|commands] <plugin name> `")
+            message.getChannel().sendMessage(":warning: Usage: `mb.plugin [disable|enable|reload|info|commands] <plugin name> `")
                     .exceptionally(ExceptionLogger.get());
             return;
         }
@@ -59,19 +58,19 @@ public class plugin implements SystemCommand {
         Optional<BotPlugin> theBotPlugin = pluginManager.getPlugins().stream()
                 .filter(botPlugin -> botPlugin.getPluginName().equals(plugin)).findFirst();
         if (!theBotPlugin.isPresent()) {
-            message.getChannel().sendMessage(":warning: No plugin found that name: "+plugin)
+            message.getChannel().sendMessage(":warning: No plugin found that name: " + plugin)
                     .exceptionally(ExceptionLogger.get());
             return;
         }
-        if(args[1].equals("disable")){
-            if(!theBotPlugin.get().isEnabled()){
-                message.getChannel().sendMessage(":warning: Plugin '"+theBotPlugin.get().getPluginName()+ "' already disabled!");
+        if (args[1].equals("disable")) {
+            if (!theBotPlugin.get().isEnabled()) {
+                message.getChannel().sendMessage(":warning: Plugin '" + theBotPlugin.get().getPluginName() + "' already disabled!");
                 return;
             }
             theBotPlugin.get().disablePlugin();
-            message.getChannel().sendMessage(":white_check_mark: Disabled plugin '"+theBotPlugin.get().getPluginName()+"'");
+            message.getChannel().sendMessage(":white_check_mark: Disabled plugin '" + theBotPlugin.get().getPluginName() + "'");
             return;
-        }else if(args[1].equals("enable")) {
+        } else if (args[1].equals("enable")) {
             if (theBotPlugin.get().isEnabled()) {
                 message.getChannel()
                         .sendMessage(":warning: Plugin '" + theBotPlugin.get().getPluginName() + "' already enabled!");
@@ -81,14 +80,24 @@ public class plugin implements SystemCommand {
             message.getChannel()
                     .sendMessage(":white_check_mark: Enabled plugin '" + theBotPlugin.get().getPluginName() + "'");
             return;
-        }else if(args[1].equals("commands")){
+        } else if (args[1].equals("commands")) {
             StringBuilder cmd = new StringBuilder();
             theBotPlugin.get().getCommands().forEach(discordCommand -> {
-                cmd.append(discordCommand.getTrigger()+",");
+                cmd.append(discordCommand.getTrigger() + ",");
             });
-            message.getChannel().sendMessage(Util.wrapInCodeBlock(cmd.toString().substring(0,cmd.toString().length()-1)));
+            message.getChannel().sendMessage(Util.wrapInCodeBlock(cmd.toString().substring(0, cmd.toString().length() - 1)));
             return;
-        }else if(args[1].equals("info")) {
+        } else if (args[1].equals("reload")) {
+            CompletableFuture.runAsync(() -> {
+                message.getChannel()
+                        .sendMessage(":timer: Running plugin onDisable method..");
+                pluginManager.reloadPlugin(theBotPlugin.get());
+            }).whenComplete((aVoid, throwable) -> {
+                message.getChannel()
+                        .sendMessage(":white_check_mark: Reload for plugin '" + theBotPlugin.get().getPluginName() + "' complete.");
+            });
+            return;
+        } else if (args[1].equals("info")) {
             EmbedBuilder embedBuilder = new EmbedBuilder();
             embedBuilder.setColor(Color.CYAN);
             embedBuilder.setTitle(theBotPlugin.get().getPluginName());
@@ -102,10 +111,10 @@ public class plugin implements SystemCommand {
             embedBuilder.addField("Number of registered events:", Integer
                     .toString(theBotPlugin.get().getEvents().size()), false);
             embedBuilder.setDescription(theBotPlugin.get().getPluginDescription());
-            embedBuilder.setFooter("Use 'mb.plugin commands "+theBotPlugin.get().getPluginName()+"' to view the commands list");
+            embedBuilder.setFooter("Use 'mb.plugin commands " + theBotPlugin.get().getPluginName() + "' to view the commands list");
             message.getChannel().sendMessage(embedBuilder).exceptionally(ExceptionLogger.get());
             return;
-        }else {
+        } else {
             message.getChannel().sendMessage(":warning: Usage: `mb.plugin [disable|enable|info|commands] <plugin name> `")
                     .exceptionally(ExceptionLogger.get());
             return;

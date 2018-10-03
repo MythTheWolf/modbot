@@ -20,8 +20,8 @@ package com.myththewolf.modbot.core.systemPlugin.commands;
 
 import com.myththewolf.modbot.core.lib.Util;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
-import com.myththewolf.modbot.core.lib.plugin.invocation.impl.BotPlugin;
-import com.myththewolf.modbot.core.lib.plugin.invocation.interfaces.PluginManager;
+import com.myththewolf.modbot.core.lib.plugin.manager.impl.BotPlugin;
+import com.myththewolf.modbot.core.lib.plugin.manager.interfaces.PluginManager;
 import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.PluginManualPage;
 import com.myththewolf.modbot.core.systemPlugin.SystemCommand;
 import org.javacord.api.entity.message.Message;

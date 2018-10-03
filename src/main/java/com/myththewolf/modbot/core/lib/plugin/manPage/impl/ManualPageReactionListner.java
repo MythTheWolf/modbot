@@ -1,7 +1,7 @@
 package com.myththewolf.modbot.core.lib.plugin.manPage.impl;
 
-import com.myththewolf.modbot.core.lib.plugin.invocation.impl.BotPlugin;
-import com.myththewolf.modbot.core.lib.plugin.invocation.interfaces.PluginManager;
+import com.myththewolf.modbot.core.lib.plugin.manager.impl.BotPlugin;
+import com.myththewolf.modbot.core.lib.plugin.manager.interfaces.PluginManager;
 import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.PluginManualPage;
 import org.javacord.api.event.message.reaction.ReactionAddEvent;
 import org.javacord.api.listener.message.reaction.ReactionAddListener;

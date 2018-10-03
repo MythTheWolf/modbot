@@ -16,7 +16,7 @@
  *
  */
 
-package com.myththewolf.modbot.core.lib.plugin.invocation.impl;
+package com.myththewolf.modbot.core.lib.plugin.manager.impl;
 
 import com.myththewolf.modbot.core.API.command.impl.DiscordCommand;
 import com.myththewolf.modbot.core.API.command.interfaces.CommandExecutor;
@@ -24,7 +24,7 @@ import com.myththewolf.modbot.core.lib.Util;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
 import com.myththewolf.modbot.core.lib.plugin.event.interfaces.EventHandler;
 import com.myththewolf.modbot.core.lib.plugin.event.interfaces.EventType;
-import com.myththewolf.modbot.core.lib.plugin.invocation.interfaces.PluginAdapater;
+import com.myththewolf.modbot.core.lib.plugin.manager.interfaces.PluginAdapater;
 import com.myththewolf.modbot.core.lib.plugin.manPage.impl.ManualPageEmbed;
 import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.ManualType;
 import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.PluginManualPage;
@@ -84,19 +84,22 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
     private List<ManualPageEmbed> manualPageEmbeds = new ArrayList<>();
 
     private DiscordApi api;
+
+    private File jarFile;
     /**
      * Sets up this BotPlugin, it is protected only to the system.
      *
      * @param runconfig The runconfig of the plugin
      * @param loader    The class loader used to import the plugin JAR
      */
-    protected void enablePlugin(JSONObject runconfig, URLClassLoader loader,DiscordApi api) {
+    protected void enablePlugin(JSONObject runconfig, URLClassLoader loader,File selfJar,DiscordApi api) {
         this.runconfig = runconfig;
         this.pluginName = runconfig.getString("pluginName");
         this.pluginVersion = runconfig.getString("pluginDescription");
         this.pluginDescription = runconfig.getString("pluginDescription");
         this.pluginAuthor = runconfig.getString("pluginAuthor");
         this.classLoader = loader;
+        this.jarFile = selfJar;
         enabled = true;
         for (EventType I : EventType.values()) {
             this.pluginEvents.put(I, new ArrayList<>());
@@ -295,6 +298,10 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
      */
     public List<Object> getEventsOfType(EventType type) {
         return this.pluginEvents.get(type);
+    }
+
+    public File getJarFile() {
+        return jarFile;
     }
 
     /**

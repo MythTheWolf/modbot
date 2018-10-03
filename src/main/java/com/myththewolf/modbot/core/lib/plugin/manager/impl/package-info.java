@@ -17,6 +17,6 @@
  */
 
 /**
- * This package contains interfaces to blueprint core plugin of Bot plugins
+ * This package contains classes to implement the 'interfaces' package
  */
-package com.myththewolf.modbot.core.lib.plugin.invocation.interfaces;
+package com.myththewolf.modbot.core.lib.plugin.manager.impl;

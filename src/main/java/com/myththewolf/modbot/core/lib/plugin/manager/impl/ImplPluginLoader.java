@@ -16,12 +16,11 @@
  *
  */
 
-package com.myththewolf.modbot.core.lib.plugin.invocation.impl;
+package com.myththewolf.modbot.core.lib.plugin.manager.impl;
 
-import com.myththewolf.modbot.core.ModBotCoreLoader;
 import com.myththewolf.modbot.core.lib.Util;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
-import com.myththewolf.modbot.core.lib.plugin.invocation.interfaces.PluginManager;
+import com.myththewolf.modbot.core.lib.plugin.manager.interfaces.PluginManager;
 import com.myththewolf.modbot.core.lib.plugin.manPage.CommandUsage.ImplCommandUsageManual;
 import com.myththewolf.modbot.core.lib.plugin.manPage.CommandUsage.ArgumentType;
 import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.ManualType;
@@ -33,6 +32,7 @@ import org.json.JSONObject;
 import java.io.*;
 import java.net.URLClassLoader;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -49,9 +49,11 @@ public class ImplPluginLoader implements PluginManager, Loggable {
      */
     private HashMap<String, SystemCommand> systemCommands = new HashMap<>();
     private DiscordApi api;
-    public ImplPluginLoader(DiscordApi api){
+
+    public ImplPluginLoader(DiscordApi api) {
         this.api = api;
     }
+
     /**
      * Copies a directory from a jar file to an external directory.
      */
@@ -199,7 +201,7 @@ public class ImplPluginLoader implements PluginManager, Loggable {
                 Thread pluginThread = new Thread(() -> {
                     JSONObject runconfigLamb = Util.getResourceFromJar(jar, "runconfig.json")
                             .flatMap(Util::inputStreamToString).map(JSONObject::new).orElseGet(JSONObject::new);
-                    ((BotPlugin) instance).enablePlugin(runconfigLamb, pluginClassLoader,api);
+                    ((BotPlugin) instance).enablePlugin(runconfigLamb, pluginClassLoader, jar, api);
                 });
                 pluginThread.setName(runconfig.getString("pluginName"));
                 pluginThread.start();
@@ -238,7 +240,7 @@ public class ImplPluginLoader implements PluginManager, Loggable {
                                 break;
                             }
                         default:
-                            getLogger().warn("Could not enable manual '{}': Invalid manual type '{}'.",file.getAbsolutePath(),parsedManual.getString("type"));
+                            getLogger().warn("Could not enable manual '{}': Invalid manual type '{}'.", file.getAbsolutePath(), parsedManual.getString("type"));
                             break;
                     }
                 });
@@ -296,6 +298,20 @@ public class ImplPluginLoader implements PluginManager, Loggable {
                 break;
             default:
                 break;
+        }
+    }
+
+    public void reloadPlugin(BotPlugin plugin) {
+        getLogger().debug("Unloading plugin '{}' from memory", plugin.getPluginName());
+        File jar = plugin.getJarFile();
+        plugin.onDisable();
+        try {
+            plugin.getClassLoader().close();
+            plugins.remove(plugin.getPluginName());
+            loadJarFile(jar);
+        } catch (IOException e) {
+            getLogger().warn(e.getMessage());
+            e.printStackTrace();
         }
     }
 

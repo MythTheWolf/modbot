@@ -18,7 +18,7 @@
 
 package com.myththewolf.modbot.core.lib.plugin.manPage.interfaces;
 
-import com.myththewolf.modbot.core.lib.plugin.invocation.impl.BotPlugin;
+import com.myththewolf.modbot.core.lib.plugin.manager.impl.BotPlugin;
 import com.myththewolf.modbot.core.lib.plugin.manPage.impl.ManualPageEmbed;
 import org.javacord.api.entity.channel.TextChannel;
 

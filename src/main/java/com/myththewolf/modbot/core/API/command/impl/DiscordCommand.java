@@ -23,7 +23,7 @@ import com.myththewolf.modbot.core.API.command.interfaces.CommandExecutor;
 import com.myththewolf.modbot.core.ModBotCoreLoader;
 import com.myththewolf.modbot.core.lib.Util;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
-import com.myththewolf.modbot.core.lib.plugin.invocation.impl.BotPlugin;
+import com.myththewolf.modbot.core.lib.plugin.manager.impl.BotPlugin;
 import com.myththewolf.modbot.core.lib.plugin.manPage.CommandUsage.ArgumentType;
 import com.myththewolf.modbot.core.lib.plugin.manPage.CommandUsage.ImplCommandUsageManual;
 import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.ManualType;

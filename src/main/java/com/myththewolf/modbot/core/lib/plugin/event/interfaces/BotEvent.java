@@ -18,7 +18,7 @@
 
 package com.myththewolf.modbot.core.lib.plugin.event.interfaces;
 
-import com.myththewolf.modbot.core.lib.plugin.invocation.impl.BotPlugin;
+import com.myththewolf.modbot.core.lib.plugin.manager.impl.BotPlugin;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 

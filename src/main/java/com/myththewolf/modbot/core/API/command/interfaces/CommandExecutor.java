@@ -19,7 +19,7 @@
 package com.myththewolf.modbot.core.API.command.interfaces;
 
 
-import com.myththewolf.modbot.core.lib.plugin.invocation.impl.BotPlugin;
+import com.myththewolf.modbot.core.lib.plugin.manager.impl.BotPlugin;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageAuthor;

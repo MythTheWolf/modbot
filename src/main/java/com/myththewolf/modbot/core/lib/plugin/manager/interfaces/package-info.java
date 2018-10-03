@@ -16,20 +16,7 @@
  *
  */
 
-package com.myththewolf.modbot.core.lib.plugin.invocation.interfaces;
-
 /**
- * This interface is used to blueprint the BotPlugin class
+ * This package contains interfaces to blueprint core plugin of Bot plugins
  */
-public interface PluginAdapater {
-    /**
-     * This method is ran the extending plugin is enabled
-     */
-    void onEnable();
-
-    /**
-     * This method is ran when the extending plugin is disabled
-     */
-    void onDisable();
-
-}
+package com.myththewolf.modbot.core.lib.plugin.manager.interfaces;

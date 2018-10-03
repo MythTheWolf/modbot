@@ -16,9 +16,9 @@
  *
  */
 
-package com.myththewolf.modbot.core.lib.plugin.invocation.interfaces;
+package com.myththewolf.modbot.core.lib.plugin.manager.interfaces;
 
-import com.myththewolf.modbot.core.lib.plugin.invocation.impl.BotPlugin;
+import com.myththewolf.modbot.core.lib.plugin.manager.impl.BotPlugin;
 
 import java.io.File;
 import java.util.List;
@@ -48,4 +48,6 @@ public interface PluginManager {
      * @apiNote This includes all plugins, not just enabled ones.
      */
     List<BotPlugin> getPlugins();
+
+    void reloadPlugin(BotPlugin plugin);
 }

@@ -20,21 +20,18 @@ package com.myththewolf.modbot.core.systemPlugin.commands;
 
 import com.myththewolf.modbot.core.ModBotCoreLoader;
 import com.myththewolf.modbot.core.lib.Util;
-import com.myththewolf.modbot.core.lib.plugin.invocation.impl.BotPlugin;
-import com.myththewolf.modbot.core.lib.plugin.invocation.interfaces.PluginManager;
+import com.myththewolf.modbot.core.lib.plugin.manager.impl.BotPlugin;
+import com.myththewolf.modbot.core.lib.plugin.manager.interfaces.PluginManager;
 import com.myththewolf.modbot.core.systemPlugin.SystemCommand;
-import org.javacord.api.Javacord;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageAuthor;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
-import org.javacord.api.entity.user.User;
 import org.javacord.api.util.logging.ExceptionLogger;
 
 
 import java.awt.*;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.temporal.TemporalUnit;
 
 
 public class info implements SystemCommand {

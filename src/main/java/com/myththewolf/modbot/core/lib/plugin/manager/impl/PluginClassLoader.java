@@ -16,7 +16,7 @@
  *
  */
 
-package com.myththewolf.modbot.core.lib.plugin.invocation.impl;
+package com.myththewolf.modbot.core.lib.plugin.manager.impl;
 
 import com.myththewolf.modbot.core.lib.logging.Loggable;
 
