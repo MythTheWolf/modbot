@@ -1,9 +1,9 @@
-# Modbot
+# MyriadBot
 
 The last discord bot you'll ever need!
 
-## Why modbot?
-Modbot is different from other bots! Here's how:
+## Why MyriadBot?
+MyriadBot is different from other bots! Here's how:
  * It's not a stock-feature bot. It's really a backend program.
  * It runs on plugins, not hard-coded features.
  
