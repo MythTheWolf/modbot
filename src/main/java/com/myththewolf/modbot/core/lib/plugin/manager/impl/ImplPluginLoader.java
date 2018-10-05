@@ -199,7 +199,7 @@ public class ImplPluginLoader implements PluginManager, Loggable {
                 Thread pluginThread = new Thread(() -> {
                     JSONObject runconfigLamb = Util.getResourceFromJar(jar, "runconfig.json")
                             .flatMap(Util::inputStreamToString).map(JSONObject::new).orElseGet(JSONObject::new);
-                    ((BotPlugin) instance).enablePlugin(runconfigLamb, pluginClassLoader, jar, api);
+                    ((BotPlugin) instance).enablePlugin(runconfigLamb, pluginClassLoader, jar, this, api);
                 });
                 pluginThread.setName(runconfig.getString("pluginName"));
                 pluginThread.start();

@@ -28,6 +28,7 @@ import com.myththewolf.modbot.core.lib.plugin.manPage.impl.ManualPageEmbed;
 import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.ManualType;
 import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.PluginManualPage;
 import com.myththewolf.modbot.core.lib.plugin.manager.interfaces.PluginAdapater;
+import com.myththewolf.modbot.core.lib.plugin.manager.interfaces.PluginManager;
 import org.javacord.api.DiscordApi;
 import org.json.JSONObject;
 
@@ -86,19 +87,23 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
     private DiscordApi api;
 
     private File jarFile;
+
+    private PluginManager manager;
+
     /**
      * Sets up this BotPlugin, it is protected only to the system.
      *
      * @param runconfig The runconfig of the plugin
      * @param loader    The class loader used to import the plugin JAR
      */
-    protected void enablePlugin(JSONObject runconfig, URLClassLoader loader,File selfJar,DiscordApi api) {
+    protected void enablePlugin(JSONObject runconfig, URLClassLoader loader, File selfJar, PluginManager manager, DiscordApi api) {
         this.runconfig = runconfig;
         this.pluginName = runconfig.getString("pluginName");
         this.pluginVersion = runconfig.getString("pluginVersion");
         this.pluginDescription = runconfig.getString("pluginDescription");
         this.pluginAuthor = runconfig.getString("pluginAuthor");
         this.classLoader = loader;
+        this.manager = manager;
         this.jarFile = selfJar;
         enabled = true;
         for (EventType I : EventType.values()) {
@@ -160,19 +165,21 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
      * Sets this plugin as disabled, unregistering all commands and events. Also invokes @link{BotPlugin#onDisable}
      */
     public void disablePlugin() {
-        getLogger().debug("Disabling plugin: {}",getPluginName());
+        getLogger().debug("Disabling plugin: {}", getPluginName());
         this.pluginCommands = new HashMap<>();
         this.pluginEvents = new HashMap<>();
         this.enabled = false;
         onDisable();
     }
-    public void enablePlugin(){
-        getLogger().debug("Enabling plugin: {}",getPluginName());
+
+    public void enablePlugin() {
+        getLogger().debug("Enabling plugin: {}", getPluginName());
         this.pluginCommands = new HashMap<>();
         this.pluginEvents = new HashMap<>();
         this.enabled = true;
         onEnable();
     }
+
     /**
      * Returns the class loader of this plugin
      *
@@ -290,6 +297,10 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
                 .findAny();
     }
 
+    public PluginManager getPluginManager() {
+        return manager;
+    }
+
     /**
      * Gets a list of events with the desired type
      *
@@ -326,6 +337,7 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
 
     /**
      * Gets all manuals of all types
+     *
      * @return The manual list
      */
     public List<PluginManualPage> getManuals() {
@@ -333,17 +345,20 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
         this.manualPages.entrySet().stream().map(Map.Entry::getValue).forEach(finalList::addAll);
         return finalList;
     }
-    public void saveConfig(JSONObject root){
-        File conf = new File(getDataFolder().get().getAbsolutePath()+File.separator+"config.json");
-        Util.writeToFile(root.toString(4),conf);
+
+    public void saveConfig(JSONObject root) {
+        File conf = new File(getDataFolder().get().getAbsolutePath() + File.separator + "config.json");
+        Util.writeToFile(root.toString(4), conf);
     }
+
     public boolean isEnabled() {
         return enabled;
     }
 
-    public DiscordApi getDiscordAPI(){
+    public DiscordApi getDiscordAPI() {
         return api;
     }
+
     @Override
     public boolean equals(Object obj) {
         return obj instanceof BotPlugin && ((BotPlugin) obj).getClassLoader().equals(getClassLoader());
