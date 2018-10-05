@@ -16,13 +16,13 @@
  *
  */
 
-import com.myththewolf.modbot.core.ModBotCoreLoader;
+import com.myththewolf.modbot.core.MyriadBotLoader;
 import org.junit.Test;
 
 public class PluginLoaderTest {
     @Test
     public void testJarLoader() {
         String[] args = {"--nobot"};
-        ModBotCoreLoader.main(args);
+        MyriadBotLoader.main(args);
     }
 }

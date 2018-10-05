@@ -36,11 +36,11 @@ public enum ManualType {
      */
     ABOUT,
     /**
-     * General help manual, this should be for use cases and tutorials about commands or functions.
+     * General man manual, this should be for use cases and tutorials about commands or functions.
      */
     USAGE,
     /**
-     * A abstract manual, this is loose, and is just here for pagination help
+     * A abstract manual, this is loose, and is just here for pagination man
      */
     ABSTRACT
 }

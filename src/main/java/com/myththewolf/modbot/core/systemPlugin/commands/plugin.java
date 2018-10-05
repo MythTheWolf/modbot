@@ -18,7 +18,7 @@
 
 package com.myththewolf.modbot.core.systemPlugin.commands;
 
-import com.myththewolf.modbot.core.ModBotCoreLoader;
+import com.myththewolf.modbot.core.MyriadBotLoader;
 import com.myththewolf.modbot.core.lib.Util;
 import com.myththewolf.modbot.core.lib.plugin.manager.impl.BotPlugin;
 import com.myththewolf.modbot.core.lib.plugin.manager.interfaces.PluginManager;
@@ -34,11 +34,11 @@ import java.util.concurrent.CompletableFuture;
 
 public class plugin implements SystemCommand {
     private PluginManager pluginManager;
-    private ModBotCoreLoader loader;
+    private MyriadBotLoader loader;
 
-    public plugin(PluginManager manager, ModBotCoreLoader modBotCoreLoaderloader) {
+    public plugin(PluginManager manager, MyriadBotLoader myriadBotLoaderloader) {
         pluginManager = manager;
-        loader = modBotCoreLoaderloader;
+        loader = myriadBotLoaderloader;
     }
 
     @Override
@@ -81,6 +81,11 @@ public class plugin implements SystemCommand {
                     .sendMessage(":white_check_mark: Enabled plugin '" + theBotPlugin.get().getPluginName() + "'");
             return;
         } else if (args[1].equals("commands")) {
+            if (theBotPlugin.get().getCommands().isEmpty()) {
+                message.getChannel()
+                        .sendMessage(":warning: No commands are registered for this plugin");
+                return;
+            }
             StringBuilder cmd = new StringBuilder();
             theBotPlugin.get().getCommands().forEach(discordCommand -> {
                 cmd.append(discordCommand.getTrigger() + ",");
@@ -104,8 +109,7 @@ public class plugin implements SystemCommand {
             embedBuilder.addField("Author", theBotPlugin.get().getPluginAuthor(), false);
             embedBuilder.addField("Version", theBotPlugin.get().getPluginVersionString(), false);
             embedBuilder
-                    .addField("Data folder location:", theBotPlugin.get().getDataFolder().get()
-                            .getAbsolutePath(), false);
+                    .addField("Data folder location:", "./plugins/" + theBotPlugin.get().getPluginName() + "/", false);
             embedBuilder.addField("Number of registered commands:", Integer
                     .toString(theBotPlugin.get().getCommands().size()), false);
             embedBuilder.addField("Number of registered events:", Integer

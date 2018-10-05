@@ -19,7 +19,7 @@
 package com.myththewolf.modbot.core.lib.plugin.command;
 
 import com.myththewolf.modbot.core.API.command.impl.DiscordCommand;
-import com.myththewolf.modbot.core.ModBotCoreLoader;
+import com.myththewolf.modbot.core.MyriadBotLoader;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
 import com.myththewolf.modbot.core.lib.plugin.event.impl.ImboundCommandEvent;
 import com.myththewolf.modbot.core.lib.plugin.event.impl.UserCommandEvent;
@@ -62,7 +62,7 @@ public class CommandListener implements MessageCreateListener, Loggable {
     boolean isSystemCommand;
     @Override
     public void onMessageCreate(MessageCreateEvent messageCreateEvent) {
-        if(!messageCreateEvent.getMessage().getContent().startsWith(ModBotCoreLoader.COMMAND_KEY)){
+        if (!messageCreateEvent.getMessage().getContent().startsWith(MyriadBotLoader.COMMAND_KEY)) {
             return;
         }
         isValidCommand = false;
@@ -70,7 +70,7 @@ public class CommandListener implements MessageCreateListener, Loggable {
         Thread.currentThread().setName("Events");
         Message message = messageCreateEvent.getMessage();
         String[] content = message.getContent().split(" ");
-        content[0] = content[0].substring(ModBotCoreLoader.COMMAND_KEY.length());
+        content[0] = content[0].substring(MyriadBotLoader.COMMAND_KEY.length());
 
 
         manager.getPlugins().stream().map(BotPlugin::getCommands).flatMap(List::stream)

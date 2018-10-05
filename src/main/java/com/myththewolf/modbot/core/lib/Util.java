@@ -18,17 +18,15 @@
 
 package com.myththewolf.modbot.core.lib;
 
-import com.myththewolf.modbot.core.ModBotCoreLoader;
+import com.myththewolf.modbot.core.MyriadBotLoader;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageAuthor;
-import org.javacord.api.entity.user.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.io.*;
 import java.net.URL;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -87,7 +85,7 @@ public class Util {
      * @return The logger
      */
     private static Logger getLogger() {
-        return LoggerFactory.getLogger(ModBotCoreLoader.class);
+        return LoggerFactory.getLogger(MyriadBotLoader.class);
     }
 
     /**
@@ -171,7 +169,7 @@ public class Util {
         return String.format("%02d hours, %02d min, %02d sec, %03d ms", hr, min, sec, ms);
     }
 
-    public static boolean canRunSupercommand(MessageAuthor author, Message message, ModBotCoreLoader loader){
+    public static boolean canRunSupercommand(MessageAuthor author, Message message, MyriadBotLoader loader) {
         String OWNER_ID = loader.getRunConfig().getString("ownerID");
         List<Object> ids = loader.getRunConfig().getJSONArray("manager-roles").toList();
         boolean isManager = author.asUser().get().getRoles(message.getServer().get()).stream().anyMatch(role -> ids.contains(role.getIdAsString()));

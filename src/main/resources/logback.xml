@@ -16,17 +16,17 @@
   ~
   -->
 
-<configuration>
-
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+<configuration debug="false">
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener"/>
+    <appender name="jlineAppender" class="com.myththewolf.modbot.core.lib.logging.appender.logbackJlineAppender">
         <!-- encoders are assigned the type
-             ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
+            ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
         <encoder>
             <pattern>%d{HH:mm:ss.SSS} [%thread]%level: %msg%n</pattern>
         </encoder>
     </appender>
-
     <root level="debug">
-        <appender-ref ref="STDOUT" />
+        <appender-ref ref="jlineAppender"/>
     </root>
+
 </configuration>

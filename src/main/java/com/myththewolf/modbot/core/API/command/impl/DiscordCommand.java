@@ -20,14 +20,14 @@ package com.myththewolf.modbot.core.API.command.impl;
 
 
 import com.myththewolf.modbot.core.API.command.interfaces.CommandExecutor;
-import com.myththewolf.modbot.core.ModBotCoreLoader;
+import com.myththewolf.modbot.core.MyriadBotLoader;
 import com.myththewolf.modbot.core.lib.Util;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
-import com.myththewolf.modbot.core.lib.plugin.manager.impl.BotPlugin;
 import com.myththewolf.modbot.core.lib.plugin.manPage.CommandUsage.ArgumentType;
 import com.myththewolf.modbot.core.lib.plugin.manPage.CommandUsage.ImplCommandUsageManual;
 import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.ManualType;
 import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.PluginManualPage;
+import com.myththewolf.modbot.core.lib.plugin.manager.impl.BotPlugin;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageAuthor;
@@ -159,7 +159,7 @@ public class DiscordCommand implements Loggable {
                     builder.addField("EXPECTED ARGUEMENT TYPE: ",Util.wrapInCodeBlock(argRef.getString("type")),false);
                     builder.addField("GOT: ",Util.wrapInCodeBlock(badSupp),false);
                     builder.setThumbnail(user.getAvatar());
-                    builder.setFooter("See "+ModBotCoreLoader.COMMAND_KEY+"mb.man "+manual.getPageName()+" "+(badIndex)+"");
+                    builder.setFooter("See " + MyriadBotLoader.COMMAND_KEY + "mb.man " + manual.getPageName() + " " + (badIndex) + "");
                     channel.sendMessage(builder).exceptionally(ExceptionLogger.get());
                     return;
                 }

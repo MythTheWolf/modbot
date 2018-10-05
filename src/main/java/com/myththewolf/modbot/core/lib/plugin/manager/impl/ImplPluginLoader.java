@@ -20,19 +20,17 @@ package com.myththewolf.modbot.core.lib.plugin.manager.impl;
 
 import com.myththewolf.modbot.core.lib.Util;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
-import com.myththewolf.modbot.core.lib.plugin.manager.interfaces.PluginManager;
-import com.myththewolf.modbot.core.lib.plugin.manPage.CommandUsage.ImplCommandUsageManual;
 import com.myththewolf.modbot.core.lib.plugin.manPage.CommandUsage.ArgumentType;
+import com.myththewolf.modbot.core.lib.plugin.manPage.CommandUsage.ImplCommandUsageManual;
 import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.ManualType;
 import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.PluginManualPage;
+import com.myththewolf.modbot.core.lib.plugin.manager.interfaces.PluginManager;
 import com.myththewolf.modbot.core.systemPlugin.SystemCommand;
 import org.javacord.api.DiscordApi;
 import org.json.JSONObject;
 
 import java.io.*;
-import java.net.URLClassLoader;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -117,9 +115,9 @@ public class ImplPluginLoader implements PluginManager, Loggable {
                                 .getAbsolutePath());
                 return;
             }
-            URLClassLoader pluginClassLoader = new PluginClassLoader(getClass().getClassLoader());
-            ((PluginClassLoader) pluginClassLoader).loadJarFile(jar);
-            Class<?> C = ((PluginClassLoader) pluginClassLoader).getClassByName(runconfig.getString("mainClass"));
+            PluginClassLoader pluginClassLoader = new PluginClassLoader(getClass().getClassLoader());
+            pluginClassLoader.loadJarFile(jar);
+            Class<?> C = pluginClassLoader.getClassByName(runconfig.getString("mainClass"));
             if (runconfig.isNull("pluginName")) {
                 getLogger().warn("Error while enabling plugin '{}' : pluginName is NULL", jar.getAbsolutePath());
             }

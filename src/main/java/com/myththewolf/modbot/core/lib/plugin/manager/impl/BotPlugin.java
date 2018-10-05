@@ -24,10 +24,10 @@ import com.myththewolf.modbot.core.lib.Util;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
 import com.myththewolf.modbot.core.lib.plugin.event.interfaces.EventHandler;
 import com.myththewolf.modbot.core.lib.plugin.event.interfaces.EventType;
-import com.myththewolf.modbot.core.lib.plugin.manager.interfaces.PluginAdapater;
 import com.myththewolf.modbot.core.lib.plugin.manPage.impl.ManualPageEmbed;
 import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.ManualType;
 import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.PluginManualPage;
+import com.myththewolf.modbot.core.lib.plugin.manager.interfaces.PluginAdapater;
 import org.javacord.api.DiscordApi;
 import org.json.JSONObject;
 
@@ -95,7 +95,7 @@ public abstract class BotPlugin implements PluginAdapater, Loggable {
     protected void enablePlugin(JSONObject runconfig, URLClassLoader loader,File selfJar,DiscordApi api) {
         this.runconfig = runconfig;
         this.pluginName = runconfig.getString("pluginName");
-        this.pluginVersion = runconfig.getString("pluginDescription");
+        this.pluginVersion = runconfig.getString("pluginVersion");
         this.pluginDescription = runconfig.getString("pluginDescription");
         this.pluginAuthor = runconfig.getString("pluginAuthor");
         this.classLoader = loader;

@@ -18,7 +18,7 @@
 
 package com.myththewolf.modbot.core.systemPlugin.commands;
 
-import com.myththewolf.modbot.core.ModBotCoreLoader;
+import com.myththewolf.modbot.core.MyriadBotLoader;
 import com.myththewolf.modbot.core.lib.Util;
 import com.myththewolf.modbot.core.lib.plugin.manager.impl.BotPlugin;
 import com.myththewolf.modbot.core.lib.plugin.manager.interfaces.PluginManager;
@@ -27,7 +27,6 @@ import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageAuthor;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.util.logging.ExceptionLogger;
-
 
 import java.awt.*;
 import java.time.Duration;
@@ -59,7 +58,7 @@ public class info implements SystemCommand {
         manager.getPlugins().stream().filter(BotPlugin::isEnabled).forEach(plugin -> { plList += plugin.getPluginName() + " "; com += plugin.getCommands().size(); event += plugin.getEvents().size(); });
         manager.getPlugins().stream().filter(botPlugin -> !botPlugin.isEnabled()).forEach(plugin -> plList2 += plugin.getPluginName() + " ");
         EmbedBuilder infoEmbed = new EmbedBuilder();
-        Duration D = Duration.between(ModBotCoreLoader.START,LocalDateTime.now());
+        Duration D = Duration.between(MyriadBotLoader.START, LocalDateTime.now());
         String uptime = Util.milisToTimeString(D.toMillis());
         infoEmbed.setTitle("**:information_source:  System Info**");
         infoEmbed.addField(":clock: Uptime: ",Util.wrapInCodeBlock(uptime),false);
