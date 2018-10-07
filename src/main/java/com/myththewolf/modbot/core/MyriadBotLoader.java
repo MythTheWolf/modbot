@@ -70,6 +70,7 @@ public class MyriadBotLoader implements Loggable {
 
     /**
      * Starts everything in the following order:
+     *  - Start logger </b>
      * - Look for needed dirs (run, run/plugins) and create if needed <br />
      * - Load a parse run/runconfig.json; Create if needed <br />
      * - Start discord bot
