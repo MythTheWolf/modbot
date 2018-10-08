@@ -19,13 +19,18 @@
 package com.myththewolf.modbot.core;
 
 
+import com.myththewolf.modbot.core.API.command.impl.DiscordCommand;
 import com.myththewolf.modbot.core.lib.Util;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
 import com.myththewolf.modbot.core.lib.plugin.command.CommandListener;
+import com.myththewolf.modbot.core.lib.plugin.event.impl.ImboundCommandEvent;
+import com.myththewolf.modbot.core.lib.plugin.event.impl.UserCommandEvent;
+import com.myththewolf.modbot.core.lib.plugin.event.interfaces.EventHandler;
+import com.myththewolf.modbot.core.lib.plugin.event.interfaces.EventType;
 import com.myththewolf.modbot.core.lib.plugin.manPage.impl.ManualPageReactionListner;
+import com.myththewolf.modbot.core.lib.plugin.manager.impl.BotPlugin;
 import com.myththewolf.modbot.core.lib.plugin.manager.impl.ImplPluginLoader;
 import com.myththewolf.modbot.core.lib.plugin.manager.interfaces.PluginManager;
-import com.myththewolf.modbot.core.systemPlugin.commands.*;
 import org.javacord.api.AccountType;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
@@ -40,11 +45,13 @@ import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.security.InvalidParameterException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * This class is the core of everything, starting all the sub-processes
@@ -55,6 +62,8 @@ public class MyriadBotLoader implements Loggable {
     public static String COMMAND_KEY;
     public static LineReader lineReader;
     private static boolean withoutBot;
+    private static PluginManager PM;
+    private static boolean isValidCommand = false;
     private JSONObject runConfig;
 
     /**
@@ -68,9 +77,15 @@ public class MyriadBotLoader implements Loggable {
         MBCL.start(Arrays.asList(args));
     }
 
+    private static BotPlugin runnerToBotPlugin(Object runner) {
+        return PM.getPlugins().stream().filter((BotPlugin plugin) -> plugin.getEvents().stream()
+                .anyMatch(o -> o.getClass().getName().equals(runner.getClass().getName())))
+                .findFirst().orElse(null);
+    }
+
     /**
      * Starts everything in the following order:
-     *  - Start logger </b>
+     * - Start logger </b>
      * - Look for needed dirs (run, run/plugins) and create if needed <br />
      * - Load a parse run/runconfig.json; Create if needed <br />
      * - Start discord bot
@@ -86,7 +101,8 @@ public class MyriadBotLoader implements Loggable {
                 String line;
                 do {
                     line = lineReader.readLine(">", null);
-                    System.out.println("Got Input: " + line);
+                    String[] split = line.split(" ");
+
                 }
                 while (line != null && line.length() > 0);
             } catch (IOException e) {
@@ -161,17 +177,11 @@ public class MyriadBotLoader implements Loggable {
                     getLogger().debug("Loading plugins without bot");
                 }
 
-                PluginManager PM = new ImplPluginLoader(discordApi);
+                PM = new ImplPluginLoader(discordApi);
                 PM.loadDirectory(plugins);
                 if (MyriadBotLoader.withoutBot) {
                     return;
                 }
-                getLogger().info("Registering System commands");
-                ((ImplPluginLoader) PM).registerSystemCommand("mb.info", new info(PM));
-                ((ImplPluginLoader) PM).registerSystemCommand("mb.plugin", new plugin(PM, this));
-                ((ImplPluginLoader) PM).registerSystemCommand("man", new man(PM));
-                ((ImplPluginLoader) PM).registerSystemCommand("mb.shutdown", new shutdown(PM, this));
-                ((ImplPluginLoader) PM).registerSystemCommand("down", new downloadTest());
                 discordApi.addMessageCreateListener(new CommandListener(PM));
                 discordApi.addReactionAddListener(new ManualPageReactionListner(PM));
             } catch (Exception e) {
@@ -190,5 +200,68 @@ public class MyriadBotLoader implements Loggable {
 
     public JSONObject getRunConfig() {
         return runConfig;
+    }
+
+    private void handleJLine(String in) {
+        if (!in.startsWith(MyriadBotLoader.COMMAND_KEY)) {
+            return;
+        }
+
+        Thread.currentThread().setName("Events");
+        String[] content = in.split(" ");
+        content[0] = content[0].substring(MyriadBotLoader.COMMAND_KEY.length());
+
+
+        PM.getPlugins().stream().map(BotPlugin::getCommands).flatMap(List::stream)
+                .filter((DiscordCommand cmd) -> (cmd.getTrigger().equals(content[0]) || content[0]
+                        .equals(cmd.getParentPlugin().getPluginName() + ":" + cmd.getTrigger()))
+                ).forEachOrdered(discordCommand -> {
+            ImboundCommandEvent commandEvent = new ImboundCommandEvent(null, discordCommand, null);
+            PM.getPlugins().stream().flatMap(plugin -> plugin.getEventsOfType(EventType.IMBOUND_COMMAND).stream()).forEachOrdered(runner -> {
+                Optional<Method> methodOptional = Arrays.stream(runner.getClass().getMethods())
+                        .filter(method -> method.isAnnotationPresent(EventHandler.class)).findAny();
+                if (!methodOptional.isPresent()) {
+                    getLogger()
+                            .warn("Could not pass event of type IMBOUND_COMMAND to class '{}', no runner method found", runner
+                                    .getClass().getName());
+                } else try {
+                    methodOptional.get()
+                            .invoke(runner, commandEvent, runnerToBotPlugin(runner));
+                } catch (Exception e) {
+                    getLogger()
+                            .error("Could not pass event of type IMBOUND_COMMAND to class '{}': Internal error! (Our fault): {}", runner
+                                    .getClass().getName(), e.getMessage());
+                }
+            });
+            if (!commandEvent.isCancelled()) {
+                discordCommand
+                        .invokeCommand(in);
+                isValidCommand = true;
+            }
+        });
+        if (isValidCommand) {
+            PM.getPlugins().stream().flatMap(plugin -> plugin.getEventsOfType(EventType.COMMAND_RUN).stream())
+                    .forEach(runner -> {
+                        Optional<Method> methodOptional = Arrays.stream(runner.getClass().getMethods())
+                                .filter(method -> method.isAnnotationPresent(EventHandler.class)).findAny();
+                        if (!methodOptional.isPresent()) {
+                            getLogger()
+                                    .warn("Could not pass event of type CONSOLE_COMMAND_RUN to class '{}', no runner method found", runner
+                                            .getClass().getName());
+                        } else {
+                            try {
+                                methodOptional.get()
+                                        .invoke(runner, new UserCommandEvent(PM, null, runnerToBotPlugin(runner)));
+                            } catch (Exception e) {
+                                getLogger()
+                                        .error("Could not pass event of type CONSOLE_COMMAND_RUN to class '{}': Internal error! (Our fault): {}", runner
+                                                .getClass().getName(), e.getMessage());
+                            }
+                        }
+                    });
+        }
+        if (!isValidCommand) {
+            getLogger().info("\u001b[31mCommand not found.");
+        }
     }
 }

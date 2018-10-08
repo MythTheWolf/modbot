@@ -23,6 +23,8 @@ import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageAuthor;
 
+import java.util.Optional;
+
 /**
  * The interface in which command classes should implement
  */
@@ -35,6 +37,6 @@ public interface CommandAdapater {
      * @param args          A array of Strings that denotes arguments. This is taken by splitting the initial messages by spaces, but removing the first index, as the first index is the command itself.
      * @param source        The original Message,unmodified, in which triggered this command.
      */
-    void onCommand(TextChannel sourceChannel, MessageAuthor sender, String[] args, Message source);
+    void onCommand(Optional<TextChannel> sourceChannel, Optional<MessageAuthor> sender, String[] args, Optional<Message> source);
 
 }

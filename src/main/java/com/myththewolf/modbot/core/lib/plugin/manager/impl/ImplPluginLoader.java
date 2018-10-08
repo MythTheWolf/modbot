@@ -25,12 +25,12 @@ import com.myththewolf.modbot.core.lib.plugin.manPage.CommandUsage.ImplCommandUs
 import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.ManualType;
 import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.PluginManualPage;
 import com.myththewolf.modbot.core.lib.plugin.manager.interfaces.PluginManager;
-import com.myththewolf.modbot.core.systemPlugin.SystemCommand;
 import org.javacord.api.DiscordApi;
 import org.json.JSONObject;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -45,7 +45,6 @@ public class ImplPluginLoader implements PluginManager, Loggable {
     /**
      * This map contains all system commands.
      */
-    private HashMap<String, SystemCommand> systemCommands = new HashMap<>();
     private DiscordApi api;
 
     public ImplPluginLoader(DiscordApi api) {
@@ -197,52 +196,54 @@ public class ImplPluginLoader implements PluginManager, Loggable {
                 }
                 getLogger().info("Enabling plugin: {}", runconfig.getString("pluginName"));
                 Thread pluginThread = new Thread(() -> {
+                    Thread.currentThread().setName(runconfig.getString("pluginName"));
                     JSONObject runconfigLamb = Util.getResourceFromJar(jar, "runconfig.json")
                             .flatMap(Util::inputStreamToString).map(JSONObject::new).orElseGet(JSONObject::new);
                     ((BotPlugin) instance).enablePlugin(runconfigLamb, pluginClassLoader, jar, this, api);
                 });
-                pluginThread.setName(runconfig.getString("pluginName"));
-                pluginThread.start();
-                try {
-                    copyResourcesToDirectory(new JarFile(jar), "manPages", manDir.getAbsolutePath());
-                } catch (Exception e) {
-                    getLogger()
-                            .warn("Could not copy manuals for plugin '{}' outside of JAR: {}", pluginName, e.getMessage());
-                }
-                Arrays.stream(manDir.listFiles()).filter(file -> file.getName().endsWith(".json")).forEach(file -> {
-                    JSONObject parsedManual = new JSONObject(Util.readFile(file).get());
-                    switch (parsedManual.getString("type")) {
-                        case "COMMAND_SYNTAX":
-                            boolean ok = true;
-                            String badType = "";
-                            Iterator I = parsedManual.getJSONArray("arguments").iterator();
-                            while (I.hasNext()) {
-                                JSONObject ob = (JSONObject) I.next();
-                                ok = isValidArguemtnType(ob.getString("type"));
-                                badType = ob.getString("type");
-                                if (!ok)
-                                    break;
-                            }
-                            if (!((BotPlugin) instance).getCommandMap().containsKey(parsedManual.getString("for"))) {
-                                getLogger()
-                                        .warn("Could not enable manual for command '{}', target command doesn't exist.", parsedManual
-                                                .getString("for"));
-                                break;
-                            } else if (!ok) {
-                                getLogger()
-                                        .warn("Could not enable manual for command '{}': '{}' is not a valid argument type.", parsedManual
-                                                .getString("for"), badType);
-                                break;
-                            } else {
-                                addManual(((BotPlugin) instance), ManualType.COMMAND_SYNTAX, parsedManual);
-                                break;
-                            }
-                        default:
-                            getLogger().warn("Could not enable manual '{}': Invalid manual type '{}'.", file.getAbsolutePath(), parsedManual.getString("type"));
-                            break;
+                CompletableFuture.runAsync(pluginThread).whenComplete((aVoid, throwable) -> {
+                    try {
+                        copyResourcesToDirectory(new JarFile(jar), "manPages", manDir.getAbsolutePath());
+                    } catch (Exception e) {
+                        getLogger()
+                                .warn("Could not copy manuals for plugin '{}' outside of JAR: {}", pluginName, e.getMessage());
                     }
+                    Arrays.stream(manDir.listFiles()).filter(file -> file.getName().endsWith(".json")).forEach(file -> {
+                        JSONObject parsedManual = new JSONObject(Util.readFile(file).get());
+                        switch (parsedManual.getString("type")) {
+                            case "COMMAND_SYNTAX":
+                                boolean ok = true;
+                                String badType = "";
+                                Iterator I = parsedManual.getJSONArray("arguments").iterator();
+                                while (I.hasNext()) {
+                                    JSONObject ob = (JSONObject) I.next();
+                                    ok = isValidArguemtnType(ob.getString("type"));
+                                    badType = ob.getString("type");
+                                    if (!ok)
+                                        break;
+                                }
+                                if (!((BotPlugin) instance).getCommandMap().containsKey(parsedManual.getString("for"))) {
+                                    getLogger()
+                                            .warn("Could not enable manual for command '{}', target command doesn't exist.", parsedManual
+                                                    .getString("for"));
+                                    break;
+                                } else if (!ok) {
+                                    getLogger()
+                                            .warn("Could not enable manual for command '{}': '{}' is not a valid argument type.", parsedManual
+                                                    .getString("for"), badType);
+                                    break;
+                                } else {
+                                    addManual(((BotPlugin) instance), ManualType.COMMAND_SYNTAX, parsedManual);
+                                    break;
+                                }
+                            default:
+                                getLogger().warn("Could not enable manual '{}': Invalid manual type '{}'.", file.getAbsolutePath(), parsedManual.getString("type"));
+                                break;
+                        }
+                    });
+                    this.plugins.put(runconfig.getString("pluginName"), ((BotPlugin) instance));
                 });
-                this.plugins.put(runconfig.getString("pluginName"), ((BotPlugin) instance));
+
             } catch (InstantiationException | IllegalAccessException e) {
                 getLogger().error("Internal Exception while loading plugin: {}, ", jar.getAbsolutePath(), e);
                 return;
@@ -268,24 +269,6 @@ public class ImplPluginLoader implements PluginManager, Loggable {
         return new ArrayList<BotPlugin>(this.plugins.values());
     }
 
-    /**
-     * Registers a system command
-     *
-     * @param trigger The literal command string
-     * @param cmd     The executor
-     */
-    public void registerSystemCommand(String trigger, SystemCommand cmd) {
-        systemCommands.put(trigger, cmd);
-    }
-
-    /**
-     * Gets all system commands
-     *
-     * @return A list of system commands
-     */
-    public HashMap<String, SystemCommand> getSystemCommands() {
-        return systemCommands;
-    }
 
     public void addManual(BotPlugin plugin, ManualType type, JSONObject data) {
         List<PluginManualPage> oldPluginManualPageList = plugin.getManuasOfType(type);

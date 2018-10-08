@@ -26,7 +26,6 @@ import com.myththewolf.modbot.core.lib.plugin.event.impl.UserCommandEvent;
 import com.myththewolf.modbot.core.lib.plugin.event.interfaces.EventHandler;
 import com.myththewolf.modbot.core.lib.plugin.event.interfaces.EventType;
 import com.myththewolf.modbot.core.lib.plugin.manager.impl.BotPlugin;
-import com.myththewolf.modbot.core.lib.plugin.manager.impl.ImplPluginLoader;
 import com.myththewolf.modbot.core.lib.plugin.manager.interfaces.PluginManager;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.event.message.MessageCreateEvent;
@@ -102,16 +101,6 @@ public class CommandListener implements MessageCreateListener, Loggable {
                                 .getAuthor(), messageCreateEvent.getMessage());
                 isValidCommand = true;
             }
-        });
-
-        ((ImplPluginLoader) manager).getSystemCommands().forEach((key, val) -> {
-            if (key.equals(content[0])) {
-                getLogger().info("{} ran a system command: {}", messageCreateEvent.getMessage().getAuthor()
-                        .getName(), key);
-                val.onCommand(messageCreateEvent.getMessage().getAuthor(), messageCreateEvent.getMessage());
-                isSystemCommand = true;
-            }
-
         });
         if (isValidCommand) {
             manager.getPlugins().stream().flatMap(plugin -> plugin.getEventsOfType(EventType.COMMAND_RUN).stream())
