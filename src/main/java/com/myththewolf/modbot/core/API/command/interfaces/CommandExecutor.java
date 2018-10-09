@@ -19,7 +19,9 @@
 package com.myththewolf.modbot.core.API.command.interfaces;
 
 
+import com.myththewolf.modbot.core.lib.logging.Loggable;
 import com.myththewolf.modbot.core.lib.plugin.manager.impl.BotPlugin;
+import com.vdurmont.emoji.EmojiParser;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageAuthor;
@@ -34,7 +36,7 @@ import java.util.Optional;
  * CommandExecutor class to be extended to plugins
  * This class is abstract so we can package helper methods, yet the onCommand can be handled by the plugin dev
  */
-public abstract class CommandExecutor implements CommandAdapater {
+public abstract class CommandExecutor implements CommandAdapater, Loggable {
     /**
      * The TextChannel from the last command ran
      */
@@ -66,6 +68,10 @@ public abstract class CommandExecutor implements CommandAdapater {
      * @param content The message to be sent
      */
     public void reply(String content) {
+        if (!getLastAuthor().isPresent()) {
+            getLogger().info(EmojiParser.parseToUnicode(content));
+            return;
+        }
         getLastTextChannel().sendMessage(content).exceptionally(ExceptionLogger.get());
     }
 
@@ -75,6 +81,10 @@ public abstract class CommandExecutor implements CommandAdapater {
      * @param embedBuilder The message embed to be sent
      */
     public void reply(EmbedBuilder embedBuilder) {
+        if (!getLastAuthor().isPresent()) {
+            getLogger().info("[Unimplemented embed builder]");
+            return;
+        }
         getLastTextChannel().sendMessage(embedBuilder).exceptionally(ExceptionLogger.get());
     }
 
@@ -95,6 +105,12 @@ public abstract class CommandExecutor implements CommandAdapater {
      * @param title   The title to bind to the embed
      */
     public void succeeded(String content, String footer, String title) {
+        if (getLastAuthor().isPresent()) {
+            reply("\u001b[32mSuccess: " + EmojiParser.parseToUnicode(title));
+            reply(EmojiParser.parseToUnicode(content));
+            reply(EmojiParser.parseToUnicode(footer) + "\u001b[0m");
+            return;
+        }
         EmbedBuilder succ = new EmbedBuilder();
         succ.setColor(Color.GREEN);
         succ.setTitle(title);
@@ -104,7 +120,7 @@ public abstract class CommandExecutor implements CommandAdapater {
     }
 
     /**
-     * Sends a red "failed" MessageEmbed with a specified content
+     * Sends a pre-defined red "failed" message to the command source
      *
      * @param content
      */
@@ -113,13 +129,19 @@ public abstract class CommandExecutor implements CommandAdapater {
     }
 
     /**
-     * Sends a red "failed" MessageEmbed with the specified content
+     * Sends a red "failed" messaged to the command source
      *
      * @param content The message to send within the embed.
      * @param footer  The footer to bind to the embed
      * @param title   The title to bind to the embed
      */
     public void failed(String content, String footer, String title) {
+        if (!getLastAuthor().isPresent()) {
+            reply("\u001b[31mA error occured while executing the command: " + EmojiParser.parseToUnicode(title));
+            reply(EmojiParser.parseToUnicode(content));
+            reply(EmojiParser.parseToUnicode(footer) + "\u001b[0m");
+            return;
+        }
         EmbedBuilder fail = new EmbedBuilder().setAuthor(getLastAuthor().get().getName(), null, getLastAuthor().get().getAvatar().getUrl().toString());
         fail.setFooter(footer);
         fail.setTitle(title);
@@ -146,7 +168,7 @@ public abstract class CommandExecutor implements CommandAdapater {
     /**
      * Gets the last known User who ran this command
      *
-     * @return Optional, as the message may be deleted
+     * @return Optional, empty if ran by command
      */
     public Optional<MessageAuthor> getLastAuthor() {
         return Optional.ofNullable(getLastMessage() != null ? getLastMessage().getAuthor() : null);

@@ -101,8 +101,7 @@ public class MyriadBotLoader implements Loggable {
                 String line;
                 do {
                     line = lineReader.readLine(">", null);
-                    String[] split = line.split(" ");
-
+                    handleJLine(line);
                 }
                 while (line != null && line.length() > 0);
             } catch (IOException e) {
@@ -207,7 +206,6 @@ public class MyriadBotLoader implements Loggable {
             return;
         }
 
-        Thread.currentThread().setName("Events");
         String[] content = in.split(" ");
         content[0] = content[0].substring(MyriadBotLoader.COMMAND_KEY.length());
 
