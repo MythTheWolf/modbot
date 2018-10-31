@@ -307,6 +307,7 @@ public class ImplPluginLoader implements PluginManager, Loggable {
         if (!delJar) {
             getLogger().warn("Could not delete jar file: {}", plugin.getJarFile().getAbsolutePath());
         }
+        plugins.remove(plugin.getPluginName());
     }
 
     boolean isValidArguemtnType(String in) {
