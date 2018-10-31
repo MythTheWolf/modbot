@@ -22,7 +22,6 @@ package com.myththewolf.modbot.core.API.command.impl;
 import com.myththewolf.modbot.core.API.command.interfaces.CommandExecutor;
 import com.myththewolf.modbot.core.MyriadBotLoader;
 import com.myththewolf.modbot.core.lib.Util;
-import com.myththewolf.modbot.core.lib.logging.Loggable;
 import com.myththewolf.modbot.core.lib.plugin.manPage.CommandUsage.ArgumentType;
 import com.myththewolf.modbot.core.lib.plugin.manPage.CommandUsage.ImplCommandUsageManual;
 import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.ManualType;
@@ -35,6 +34,7 @@ import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.util.logging.ExceptionLogger;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -42,7 +42,7 @@ import java.util.Optional;
 /**
  * This class represents a CommandExecutor container for easy control
  */
-public class DiscordCommand implements Loggable {
+public class DiscordCommand {
     /**
      * The literal command String
      */
@@ -167,14 +167,9 @@ public class DiscordCommand implements Loggable {
                 }
             }
         }
-
-        Thread commandThread = new Thread(() -> {
             getExecutor().update(getParentPlugin(), channel, source);
             getExecutor().onCommand(Optional.ofNullable(channel), Optional.ofNullable(user), args, Optional.ofNullable(source));
             getLogger().info("{} ran a command: {}", user.getName(), getTrigger());
-        });
-        commandThread.setName(getParentPlugin().getPluginName());
-        commandThread.start();
     }
 
     public void invokeCommand(String source) {
@@ -185,78 +180,75 @@ public class DiscordCommand implements Loggable {
                 getLogger().info("\u001b[31mCommand syntax is incorrect! Usage: " + Util.wrapInCodeBlock(manual.getUsage()));
                 getLogger().info("See mb.man " + manual.getCommand().getTrigger() + " for more details.\u001b[0m");
                 return;
-            } else {
-                boolean typesOk = true;
-                String badType = "";
-                String badSupp = "";
-                int badIndex = 0;
-                String[] usage = manual.getRawUsage().split(" ");
-                for (int x = 0; x < manual.getDataJsonObject().getJSONArray("arguments").length(); x++) {
-                    if (x > args.length - 1) {
+            }
+            boolean typesOk = true;
+            String badType = "";
+            String badSupp = "";
+            int badIndex = 0;
+            String[] usage = manual.getRawUsage().split(" ");
+            for (int x = 0; x < manual.getDataJsonObject().getJSONArray("arguments").length(); x++) {
+                if (x > args.length - 1) {
+                    break;
+                }
+                JSONObject arg = mapObjectByName(usage[x], manual.getDataJsonObject().getJSONArray("arguments"));
+                ArgumentType type = ArgumentType.valueOf(arg.getString("type"));
+                badType = usage[x];
+                badSupp = args[x];
+                badIndex++;
+                switch (type) {
+                    case STRING:
+                        typesOk = true;
                         break;
-                    }
-                    JSONObject arg = mapObjectByName(usage[x], manual.getDataJsonObject().getJSONArray("arguments"));
-                    ArgumentType type = ArgumentType.valueOf(arg.getString("type"));
-                    badType = usage[x];
-                    badSupp = args[x];
-                    badIndex++;
-                    switch (type) {
-                        case STRING:
-                            typesOk = true;
-                            break;
-                        case BOOLEAN:
-                            typesOk = Boolean.parseBoolean(args[x]);
-                            break;
-                        case INT:
-                            typesOk = Util.isNumber(args[x]);
-                            break;
-                        case VARARG:
-                            typesOk = (x + 1) > usage.length;
-                            break;
-                        case TEXT_CHANNEL:
-                            String id = args[x].substring(2, (args[x].length() - 1));
-                            typesOk = getParentPlugin().getDiscordAPI().getChannelById(id).isPresent();
-                            break;
-                        case USER_MENTION:
-                            String id2 = args[x].substring(2, (args[x].length() - 1));
-                            typesOk = getParentPlugin().getDiscordAPI().getUserById(id2).getNow(null) != null;
-                            break;
-                        case ROLE_MENTION:
-                            String id3 = args[x].substring(2, (args[x].length() - 1));
-                            typesOk = getParentPlugin().getDiscordAPI().getRoleById(id3).isPresent();
-                            break;
-                        case ROLE_NAME:
-                            typesOk = getParentPlugin().getDiscordAPI().getRolesByName(args[x]).size() > 0;
-                            break;
-                        default:
-                            typesOk = false;
-                            break;
-                    }
-                    if (!typesOk) {
+                    case BOOLEAN:
+                        typesOk = Boolean.parseBoolean(args[x]);
                         break;
-                    }
+                    case INT:
+                        typesOk = Util.isNumber(args[x]);
+                        break;
+                    case VARARG:
+                        typesOk = (x + 1) > usage.length;
+                        break;
+                    case TEXT_CHANNEL:
+                        String id = args[x].substring(2, (args[x].length() - 1));
+                        typesOk = getParentPlugin().getDiscordAPI().getChannelById(id).isPresent();
+                        break;
+                    case USER_MENTION:
+                        String id2 = args[x].substring(2, (args[x].length() - 1));
+                        typesOk = getParentPlugin().getDiscordAPI().getUserById(id2).getNow(null) != null;
+                        break;
+                    case ROLE_MENTION:
+                        String id3 = args[x].substring(2, (args[x].length() - 1));
+                        typesOk = getParentPlugin().getDiscordAPI().getRoleById(id3).isPresent();
+                        break;
+                    case ROLE_NAME:
+                        typesOk = getParentPlugin().getDiscordAPI().getRolesByName(args[x]).size() > 0;
+                        break;
+                    default:
+                        typesOk = true;
+                        break;
                 }
                 if (!typesOk) {
-
-                    getLogger().warn("\u001b[31m:x: Command Syntax incorrect");
-                    getLogger().warn(Util.wrapInCodeBlock("One of your argument types is wrong!"));
-                    getLogger().warn("COMMAND USAGE:" + manual.getUsage());
-                    JSONObject argRef = mapObjectByName(badType, manual.getDataJsonObject().getJSONArray("arguments"));
-                    getLogger().warn("EXPECTED ARGUEMENT TYPE: " + argRef.getString("type"));
-                    getLogger().warn("GOT: " + badSupp);
-                    getLogger().warn("See " + MyriadBotLoader.COMMAND_KEY + "mb.man " + manual.getPageName() + " " + (badIndex) + "\u001b[0m");
-                    return;
+                    break;
                 }
             }
+            if (!typesOk) {
+                getLogger().warn("\u001b[31m:x: Command Syntax incorrect");
+                getLogger().warn(Util.wrapInCodeBlock("One of your argument types is wrong!"));
+                getLogger().warn("COMMAND USAGE:" + manual.getUsage());
+                JSONObject argRef = mapObjectByName(badType, manual.getDataJsonObject().getJSONArray("arguments"));
+                getLogger().warn("EXPECTED ARGUEMENT TYPE: " + argRef.getString("type"));
+                getLogger().warn("GOT: " + badSupp);
+                getLogger().warn("See " + MyriadBotLoader.COMMAND_KEY + "mb.man " + manual.getPageName() + " " + (badIndex) + "\u001b[0m");
+                return;
+            }
         }
-
-        Thread commandThread = new Thread(() -> {
+        Thread t = new Thread(() -> {
             getExecutor().update(getParentPlugin(), null, null);
             getExecutor().onCommand(Optional.empty(), Optional.empty(), args, Optional.empty());
             getLogger().info("{} ran a command: {}", "CONSOLE", getTrigger());
         });
-        commandThread.setName(getParentPlugin().getPluginName());
-        commandThread.start();
+        t.setName(getParentPlugin().getPluginName());
+        t.start();
     }
 
     /**
@@ -286,5 +278,9 @@ public class DiscordCommand implements Loggable {
             }
         }
         return null;
+    }
+
+    private Logger getLogger() {
+        return getParentPlugin().getLogger();
     }
 }

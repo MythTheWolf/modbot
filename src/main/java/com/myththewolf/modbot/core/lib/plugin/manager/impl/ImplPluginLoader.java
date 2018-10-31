@@ -200,6 +200,7 @@ public class ImplPluginLoader implements PluginManager, Loggable {
                     JSONObject runconfigLamb = Util.getResourceFromJar(jar, "runconfig.json")
                             .flatMap(Util::inputStreamToString).map(JSONObject::new).orElseGet(JSONObject::new);
                     ((BotPlugin) instance).enablePlugin(runconfigLamb, pluginClassLoader, jar, this, api);
+                    ((BotPlugin) instance).saveConfig(((BotPlugin) instance).getConfig().orElseThrow(IllegalStateException::new));
                 });
                 CompletableFuture.runAsync(pluginThread).whenComplete((aVoid, throwable) -> {
                     try {
@@ -296,6 +297,18 @@ public class ImplPluginLoader implements PluginManager, Loggable {
         }
     }
 
+    @Override
+    public void deletePlugin(BotPlugin plugin) {
+        boolean deleted = deleteFolder(plugin.getDataFolder().orElseThrow(IllegalStateException::new));
+        if (!deleted) {
+            getLogger().warn("Could not delete folder: {}", plugin.getDataFolder().get().getAbsolutePath());
+        }
+        boolean delJar = plugin.getJarFile().delete();
+        if (!delJar) {
+            getLogger().warn("Could not delete jar file: {}", plugin.getJarFile().getAbsolutePath());
+        }
+    }
+
     boolean isValidArguemtnType(String in) {
         try {
             ArgumentType argumentType = ArgumentType.valueOf(in);
@@ -303,5 +316,19 @@ public class ImplPluginLoader implements PluginManager, Loggable {
             return false;
         }
         return true;
+    }
+
+    private boolean deleteFolder(File folder) {
+        File[] files = folder.listFiles();
+        if (files != null) { //some JVMs return null for empty dirs
+            for (File f : files) {
+                if (f.isDirectory()) {
+                    deleteFolder(f);
+                } else {
+                    f.delete();
+                }
+            }
+        }
+        return folder.delete();
     }
 }

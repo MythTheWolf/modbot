@@ -50,4 +50,6 @@ public interface PluginManager {
     List<BotPlugin> getPlugins();
 
     void reloadPlugin(BotPlugin plugin);
+
+    void deletePlugin(BotPlugin plugin);
 }

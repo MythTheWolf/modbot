@@ -202,12 +202,8 @@ public class MyriadBotLoader implements Loggable {
     }
 
     private void handleJLine(String in) {
-        if (!in.startsWith(MyriadBotLoader.COMMAND_KEY)) {
-            return;
-        }
 
         String[] content = in.split(" ");
-        content[0] = content[0].substring(MyriadBotLoader.COMMAND_KEY.length());
 
 
         PM.getPlugins().stream().map(BotPlugin::getCommands).flatMap(List::stream)
@@ -232,9 +228,13 @@ public class MyriadBotLoader implements Loggable {
                 }
             });
             if (!commandEvent.isCancelled()) {
-                discordCommand
-                        .invokeCommand(in);
-                isValidCommand = true;
+                Thread thread = new Thread(() -> {
+                    Thread.currentThread().setName(discordCommand.getParentPlugin().getPluginName());
+                    discordCommand
+                            .invokeCommand(in);
+                    isValidCommand = true;
+                });
+                thread.start();
             }
         });
         if (isValidCommand) {
