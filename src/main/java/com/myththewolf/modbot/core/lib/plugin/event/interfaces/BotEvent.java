@@ -22,7 +22,6 @@ import com.myththewolf.modbot.core.lib.plugin.manager.impl.BotPlugin;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 
-
 import java.util.Optional;
 
 /**
@@ -60,4 +59,6 @@ public interface BotEvent {
     BotPlugin getPlugin();
 
     default void cancelEvent(){}
+
+    boolean isCancelled();
 }

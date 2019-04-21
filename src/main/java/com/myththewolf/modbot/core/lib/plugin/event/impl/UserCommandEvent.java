@@ -18,17 +18,15 @@
 
 package com.myththewolf.modbot.core.lib.plugin.event.impl;
 
+import com.myththewolf.modbot.core.API.command.impl.DiscordCommand;
 import com.myththewolf.modbot.core.API.command.interfaces.CommandExecutor;
 import com.myththewolf.modbot.core.lib.plugin.event.interfaces.BotEvent;
 import com.myththewolf.modbot.core.lib.plugin.event.interfaces.EventType;
 import com.myththewolf.modbot.core.lib.plugin.manager.impl.BotPlugin;
-import com.myththewolf.modbot.core.lib.plugin.manager.interfaces.PluginManager;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 
-
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -51,21 +49,11 @@ public class UserCommandEvent implements BotEvent {
     /**
      * Constructs a new UserCommandEvent
      *
-     * @param manager The system plugin manager
      * @param message The source message of the command
      * @param plugin  The plugin that this event will be passed to
      */
-    public UserCommandEvent(PluginManager manager, Message message, BotPlugin plugin) {
-        commandExecutor = manager.getPlugins()
-                .stream()
-                .map(BotPlugin::getCommands)
-                .flatMap(List::stream)
-                .filter(discordCommand -> discordCommand.getTrigger()
-                        .equals(message.getContent()
-                                .split(" ")[0]))
-                .findFirst()
-                .get()
-                .getExecutor();
+    public UserCommandEvent(DiscordCommand command, Message message, BotPlugin plugin) {
+        this.commandExecutor = command.getExecutor();
         this.message = message;
         this.botPlugin = plugin;
     }
@@ -99,4 +87,8 @@ public class UserCommandEvent implements BotEvent {
         return botPlugin;
     }
 
+    @Override
+    public boolean isCancelled() {
+        return false;
+    }
 }

@@ -16,9 +16,11 @@
  *
  */
 
-package com.myththewolf.modbot.core.lib;
+package com.myththewolf.modbot.core;
 
-import com.myththewolf.modbot.core.MyriadBotLoader;
+import com.myththewolf.modbot.core.lib.plugin.event.interfaces.BotEvent;
+import com.myththewolf.modbot.core.lib.plugin.event.interfaces.EventHandler;
+import com.myththewolf.modbot.core.lib.plugin.manager.impl.BotPlugin;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageAuthor;
 import org.slf4j.Logger;
@@ -26,7 +28,9 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.io.*;
+import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -185,6 +189,33 @@ public class Util {
         return true;
     }
 
+    public static boolean fireEvent(BotEvent event) {
+        boolean result = false;
+        MyriadBotLoader.PM.getPlugins().stream().flatMap(plugin -> plugin.getEventsOfType(event.getEventType()).stream()).forEachOrdered(runner -> {
+            Optional<Method> methodOptional = Arrays.stream(runner.getClass().getMethods())
+                    .filter(method -> method.isAnnotationPresent(EventHandler.class)).findAny();
+            if (!methodOptional.isPresent()) {
+                getLogger()
+                        .warn("Could not pass event of  {} to class '{}', no runner method found", event.getEventType().toString(), runner
+                                .getClass().getName());
+            } else {
+                try {
+                    methodOptional.get()
+                            .invoke(runner, event, runnerToBotPlugin(runner));
+                } catch (Exception e) {
+                    getLogger()
+                            .error("Could not pass event of type {} to class '{}': Internal error! (Our fault): {}", event.getEventType().toString(), runner
+                                    .getClass().getName(), e.getMessage());
+                }
+            }
+        });
+        return event.isCancelled();
+    }
 
+    private static BotPlugin runnerToBotPlugin(Object runner) {
+        return MyriadBotLoader.PM.getPlugins().stream().filter((BotPlugin plugin) -> plugin.getEvents().stream()
+                .anyMatch(o -> o.getClass().getName().equals(runner.getClass().getName())))
+                .findFirst().orElse(null);
+    }
 }
 

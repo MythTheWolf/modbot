@@ -21,7 +21,7 @@ package com.myththewolf.modbot.core.API.command.impl;
 
 import com.myththewolf.modbot.core.API.command.interfaces.CommandExecutor;
 import com.myththewolf.modbot.core.MyriadBotLoader;
-import com.myththewolf.modbot.core.lib.Util;
+import com.myththewolf.modbot.core.Util;
 import com.myththewolf.modbot.core.lib.plugin.manPage.CommandUsage.ArgumentType;
 import com.myththewolf.modbot.core.lib.plugin.manPage.CommandUsage.ImplCommandUsageManual;
 import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.ManualType;
@@ -98,8 +98,8 @@ public class DiscordCommand {
         if (getCommandManual().isPresent()) {
             ImplCommandUsageManual manual = (ImplCommandUsageManual) getCommandManual().get();
             if (args.length < manual.getNumRequiredArgs()) {
-                channel.sendMessage(":warning: Command syntax is incorrect! Usage: " + Util.wrapInCodeBlock(manual.getUsage()));
-                channel.sendMessage("*See `mb.man " + manual.getCommand().getTrigger() + "` for more details.*");
+                channel.sendMessage(":warning: Command syntax is incorrect! Usage: " + Util.wrapInCodeBlock(manual.getUsage())).join();
+                channel.sendMessage("*See `mb.man " + manual.getCommand().getTrigger() + "` for more details.*").join();
                 return;
             } else {
                 boolean typesOk = true;
@@ -168,7 +168,7 @@ public class DiscordCommand {
             }
         }
             getExecutor().update(getParentPlugin(), channel, source);
-            getExecutor().onCommand(Optional.ofNullable(channel), Optional.ofNullable(user), args, Optional.ofNullable(source));
+        getExecutor().onCommand(channel, user, args, source);
             getLogger().info("{} ran a command: {}", user.getName(), getTrigger());
     }
 
@@ -177,7 +177,7 @@ public class DiscordCommand {
         if (getCommandManual().isPresent()) {
             ImplCommandUsageManual manual = (ImplCommandUsageManual) getCommandManual().get();
             if (args.length < manual.getNumRequiredArgs()) {
-                getLogger().info("\u001b[31mCommand syntax is incorrect! Usage: " + Util.wrapInCodeBlock(manual.getUsage()));
+                getLogger().info("\u001b[31mCommand syntax is incorrect! Usage: " + manual.getUsage());
                 getLogger().info("See mb.man " + manual.getCommand().getTrigger() + " for more details.\u001b[0m");
                 return;
             }
@@ -244,7 +244,7 @@ public class DiscordCommand {
         }
         Thread t = new Thread(() -> {
             getExecutor().update(getParentPlugin(), null, null);
-            getExecutor().onCommand(Optional.empty(), Optional.empty(), args, Optional.empty());
+            getExecutor().onCommand(null, null, args, null);
             getLogger().info("{} ran a command: {}", "CONSOLE", getTrigger());
         });
         t.setName(getParentPlugin().getPluginName());

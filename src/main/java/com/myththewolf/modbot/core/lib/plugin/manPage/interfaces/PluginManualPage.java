@@ -18,8 +18,8 @@
 
 package com.myththewolf.modbot.core.lib.plugin.manPage.interfaces;
 
-import com.myththewolf.modbot.core.lib.plugin.manager.impl.BotPlugin;
 import com.myththewolf.modbot.core.lib.plugin.manPage.impl.ManualPageEmbed;
+import com.myththewolf.modbot.core.lib.plugin.manager.impl.BotPlugin;
 import org.javacord.api.entity.channel.TextChannel;
 
 import java.util.List;
@@ -61,6 +61,7 @@ public interface PluginManualPage {
      */
     Object getPageOf(int index);
 
+    String asString(int index);
     /**
      * Displays a new Embed for this manual page
      * @return The newly created manual page embed

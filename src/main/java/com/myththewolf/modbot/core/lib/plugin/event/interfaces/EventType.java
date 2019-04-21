@@ -19,13 +19,14 @@
 package com.myththewolf.modbot.core.lib.plugin.event.interfaces;
 
 import com.myththewolf.modbot.core.lib.plugin.event.impl.ImboundCommandEvent;
+import com.myththewolf.modbot.core.lib.plugin.event.impl.PluginEnableEvent;
 import com.myththewolf.modbot.core.lib.plugin.event.impl.UserCommandEvent;
 
 public enum EventType {
 
     COMMAND_RUN(UserCommandEvent.class),
-    IMBOUND_COMMAND(ImboundCommandEvent.class);
-
+    IMBOUND_COMMAND(ImboundCommandEvent.class),
+    PLUGIN_ENABLE(PluginEnableEvent.class);
     Class dataClass;
 
     EventType(Class clazz) {

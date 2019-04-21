@@ -18,8 +18,9 @@
 
 package com.myththewolf.modbot.core.lib.plugin.manager.impl;
 
-import com.myththewolf.modbot.core.lib.Util;
+import com.myththewolf.modbot.core.Util;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
+import com.myththewolf.modbot.core.lib.plugin.event.impl.PluginEnableEvent;
 import com.myththewolf.modbot.core.lib.plugin.manPage.CommandUsage.ArgumentType;
 import com.myththewolf.modbot.core.lib.plugin.manPage.CommandUsage.ImplCommandUsageManual;
 import com.myththewolf.modbot.core.lib.plugin.manPage.interfaces.ManualType;
@@ -243,6 +244,11 @@ public class ImplPluginLoader implements PluginManager, Loggable {
                         }
                     });
                     this.plugins.put(runconfig.getString("pluginName"), ((BotPlugin) instance));
+                    PluginEnableEvent enableEvent = new PluginEnableEvent((BotPlugin) instance);
+                    Util.fireEvent(enableEvent);
+                    if (enableEvent.isCancelled()) {
+                        ((BotPlugin) instance).disablePlugin();
+                    }
                 });
 
             } catch (InstantiationException | IllegalAccessException e) {
@@ -254,6 +260,7 @@ public class ImplPluginLoader implements PluginManager, Loggable {
             getLogger()
                     .warn("Error while enabling plugin: {}, runconfig.json was not found: ", jar.getAbsolutePath(), e);
         }
+
     }
 
     /**

@@ -20,11 +20,9 @@ package com.myththewolf.modbot.core.lib.plugin.command;
 
 import com.myththewolf.modbot.core.API.command.impl.DiscordCommand;
 import com.myththewolf.modbot.core.MyriadBotLoader;
+import com.myththewolf.modbot.core.Util;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
 import com.myththewolf.modbot.core.lib.plugin.event.impl.ImboundCommandEvent;
-import com.myththewolf.modbot.core.lib.plugin.event.impl.UserCommandEvent;
-import com.myththewolf.modbot.core.lib.plugin.event.interfaces.EventHandler;
-import com.myththewolf.modbot.core.lib.plugin.event.interfaces.EventType;
 import com.myththewolf.modbot.core.lib.plugin.manager.impl.BotPlugin;
 import com.myththewolf.modbot.core.lib.plugin.manager.interfaces.PluginManager;
 import org.javacord.api.entity.message.Message;
@@ -32,10 +30,7 @@ import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
 import org.javacord.api.util.logging.ExceptionLogger;
 
-import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * This is a core Message event, it reads incoming messages and controls commands.
@@ -77,65 +72,23 @@ public class CommandListener implements MessageCreateListener, Loggable {
                         .equals(cmd.getParentPlugin().getPluginName() + ":" + cmd.getTrigger()))
                 ).forEachOrdered(discordCommand -> {
             ImboundCommandEvent commandEvent = new ImboundCommandEvent(message,discordCommand,messageCreateEvent.getMessage().getUserAuthor().get());
-            manager.getPlugins().stream().flatMap(plugin -> plugin.getEventsOfType(EventType.IMBOUND_COMMAND).stream()).forEachOrdered(runner -> {
-                Optional<Method> methodOptional = Arrays.stream(runner.getClass().getMethods())
-                        .filter(method -> method.isAnnotationPresent(EventHandler.class)).findAny();
-                if (!methodOptional.isPresent()) {
-                    getLogger()
-                            .warn("Could not pass event of type IMBOUND_COMMAND to class '{}', no runner method found", runner
-                                    .getClass().getName());
-                } else {
-                    try {
-                        methodOptional.get()
-                                .invoke(runner, commandEvent, runnerToBotPlugin(runner));
-                    } catch (Exception e) {
-                        getLogger()
-                                .error("Could not pass event of type IMBOUND_COMMAND to class '{}': Internal error! (Our fault): {}", runner
-                                        .getClass().getName(), e.getMessage());
-                    }
-                }
-            });
-            if(!commandEvent.isCancelled()){
+
+            if (!Util.fireEvent(commandEvent)) {
                 discordCommand
                         .invokeCommand(messageCreateEvent.getChannel(), messageCreateEvent.getMessage()
                                 .getAuthor(), messageCreateEvent.getMessage());
                 isValidCommand = true;
             }
         });
-        if (isValidCommand) {
-            manager.getPlugins().stream().flatMap(plugin -> plugin.getEventsOfType(EventType.COMMAND_RUN).stream())
-                    .forEach(runner -> {
-                        Optional<Method> methodOptional = Arrays.stream(runner.getClass().getMethods())
-                                .filter(method -> method.isAnnotationPresent(EventHandler.class)).findAny();
-                        if (!methodOptional.isPresent()) {
-                            getLogger()
-                                    .warn("Could not pass event of type COMMAND_RUN to class '{}', no runner method found", runner
-                                            .getClass().getName());
-                        } else {
-                            try {
-                                methodOptional.get()
-                                        .invoke(runner, new UserCommandEvent(manager, messageCreateEvent
-                                                .getMessage(), runnerToBotPlugin(runner)));
-                            } catch (Exception e) {
-                                getLogger()
-                                        .error("Could not pass event of type COMMAND_RUN to class '{}': Internal error! (Our fault): {}", runner
-                                                .getClass().getName(), e.getMessage());
-                            }
-                        }
-                    });
-        }
 
-        if(!isSystemCommand && !isValidCommand){
+
+        if (!isValidCommand) {
             message.getChannel().sendMessage(content[0]+": Command not found").exceptionally(ExceptionLogger.get());
             return;
         }
     }
 
-    private BotPlugin runnerToBotPlugin(Object runner) {
-        return manager.getPlugins().stream().filter((BotPlugin plugin) -> plugin.getEvents().stream()
-                .anyMatch(o -> o.getClass().getName().equals(runner.getClass().getName())))
-                .findFirst().orElse(null);
-    }
+
 }
 
 

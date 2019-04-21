@@ -1,50 +1,45 @@
 package com.myththewolf.modbot.core.lib.plugin.event.impl;
 
-import com.myththewolf.modbot.core.API.command.impl.DiscordCommand;
 import com.myththewolf.modbot.core.lib.plugin.event.interfaces.BotEvent;
 import com.myththewolf.modbot.core.lib.plugin.event.interfaces.EventType;
 import com.myththewolf.modbot.core.lib.plugin.manager.impl.BotPlugin;
-import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
-import org.javacord.api.util.logging.ExceptionLogger;
 
 import java.util.Optional;
 
-public class ImboundCommandEvent implements BotEvent {
-    private User user;
-    private DiscordCommand command;
-    private Message source;
+public class PluginEnableEvent implements BotEvent {
+
     private boolean cancel = false;
-    public ImboundCommandEvent(Message m,DiscordCommand command,User user){
-        this.user = user;
-        this.command = command;
-        this.source = m;
+    private BotPlugin plugin;
+
+    public PluginEnableEvent(BotPlugin plugin) {
+        this.plugin = plugin;
     }
+
     @Override
     public Optional<User> getUser() {
-      return  Optional.ofNullable(user);
+        return Optional.empty();
     }
 
     @Override
     public Optional<Server> getServer() {
-        return source.getServer();
+        return Optional.empty();
     }
 
     @Override
     public EventType getEventType() {
-        return EventType.IMBOUND_COMMAND;
+        return EventType.PLUGIN_ENABLE;
     }
 
     @Override
     public BotPlugin getPlugin() {
-        return command.getParentPlugin();
+        return plugin;
     }
 
     @Override
     public void cancelEvent() {
         cancel = true;
-        source.delete().exceptionally(ExceptionLogger.get());
     }
 
     @Override

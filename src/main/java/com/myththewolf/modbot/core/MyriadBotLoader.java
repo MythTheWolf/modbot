@@ -20,7 +20,6 @@ package com.myththewolf.modbot.core;
 
 
 import com.myththewolf.modbot.core.API.command.impl.DiscordCommand;
-import com.myththewolf.modbot.core.lib.Util;
 import com.myththewolf.modbot.core.lib.logging.Loggable;
 import com.myththewolf.modbot.core.lib.plugin.command.CommandListener;
 import com.myththewolf.modbot.core.lib.plugin.event.impl.ImboundCommandEvent;
@@ -62,7 +61,7 @@ public class MyriadBotLoader implements Loggable {
     public static String COMMAND_KEY;
     public static LineReader lineReader;
     private static boolean withoutBot;
-    private static PluginManager PM;
+    protected static PluginManager PM;
     private static boolean isValidCommand = false;
     private JSONObject runConfig;
 
@@ -182,7 +181,9 @@ public class MyriadBotLoader implements Loggable {
                     return;
                 }
                 discordApi.addMessageCreateListener(new CommandListener(PM));
-                discordApi.addReactionAddListener(new ManualPageReactionListner(PM));
+                ManualPageReactionListner manualPageReactionListner = new ManualPageReactionListner(PM);
+                discordApi.addReactionAddListener(manualPageReactionListner);
+                discordApi.addReactionRemoveListener(manualPageReactionListner);
             } catch (Exception e) {
                 getLogger().error("Exception in main thread:");
                 e.printStackTrace();
@@ -227,39 +228,40 @@ public class MyriadBotLoader implements Loggable {
                                     .getClass().getName(), e.getMessage());
                 }
             });
+
             if (!commandEvent.isCancelled()) {
                 Thread thread = new Thread(() -> {
                     Thread.currentThread().setName(discordCommand.getParentPlugin().getPluginName());
                     discordCommand
                             .invokeCommand(in);
-                    isValidCommand = true;
+
                 });
+                PM.getPlugins().stream().flatMap(plugin -> plugin.getEventsOfType(EventType.COMMAND_RUN).stream())
+                        .forEach(runner -> {
+                            Optional<Method> methodOptional = Arrays.stream(runner.getClass().getMethods())
+                                    .filter(method -> method.isAnnotationPresent(EventHandler.class)).findAny();
+                            if (!methodOptional.isPresent()) {
+                                getLogger()
+                                        .warn("Could not pass event of type CONSOLE_COMMAND_RUN to class '{}', no runner method found", runner
+                                                .getClass().getName());
+                            } else {
+                                try {
+                                    methodOptional.get()
+                                            .invoke(runner, new UserCommandEvent(discordCommand, null, discordCommand.getParentPlugin()));
+                                } catch (Exception e) {
+                                    getLogger()
+                                            .error("Could not pass event of type CONSOLE_COMMAND_RUN to class '{}': Internal error! (Our fault): {}", runner
+                                                    .getClass().getName(), e.getMessage());
+                                }
+                            }
+                        });
                 thread.start();
             }
         });
         if (isValidCommand) {
-            PM.getPlugins().stream().flatMap(plugin -> plugin.getEventsOfType(EventType.COMMAND_RUN).stream())
-                    .forEach(runner -> {
-                        Optional<Method> methodOptional = Arrays.stream(runner.getClass().getMethods())
-                                .filter(method -> method.isAnnotationPresent(EventHandler.class)).findAny();
-                        if (!methodOptional.isPresent()) {
-                            getLogger()
-                                    .warn("Could not pass event of type CONSOLE_COMMAND_RUN to class '{}', no runner method found", runner
-                                            .getClass().getName());
-                        } else {
-                            try {
-                                methodOptional.get()
-                                        .invoke(runner, new UserCommandEvent(PM, null, runnerToBotPlugin(runner)));
-                            } catch (Exception e) {
-                                getLogger()
-                                        .error("Could not pass event of type CONSOLE_COMMAND_RUN to class '{}': Internal error! (Our fault): {}", runner
-                                                .getClass().getName(), e.getMessage());
-                            }
-                        }
-                    });
+
+            return;
         }
-        if (!isValidCommand) {
             getLogger().info("\u001b[31mCommand not found.");
-        }
     }
 }

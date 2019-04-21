@@ -19,10 +19,10 @@
 package com.myththewolf.modbot.core.lib.plugin.manPage.CommandUsage;
 
 import com.myththewolf.modbot.core.API.command.impl.DiscordCommand;
-import com.myththewolf.modbot.core.lib.Util;
+import com.myththewolf.modbot.core.Util;
+import com.myththewolf.modbot.core.lib.plugin.manPage.impl.ManualPageEmbed;
 import com.myththewolf.modbot.core.lib.plugin.manager.impl.BotPlugin;
 import com.myththewolf.modbot.core.lib.plugin.manager.interfaces.PluginManager;
-import com.myththewolf.modbot.core.lib.plugin.manPage.impl.ManualPageEmbed;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.json.JSONArray;
@@ -133,20 +133,57 @@ public class ImplCommandUsageManual implements CommandUsageManual {
         return null;
     }
 
+    @Override
+    public String asString(int index) {
+        if (index < 0 || index > getTotalNumberPages()) {
+            return null;
+        }
+        int arguments_end = dataJsonObject.getJSONArray("arguments").length() + 1;
+        if (index == 0) {
+            StringBuilder base = new StringBuilder();
+            StringBuilder build = new StringBuilder(dataJsonObject.getString("for"));
+            dataJsonObject.getJSONArray("arguments").forEach(arg -> {
+                JSONObject argument = (JSONObject) arg;
+                syntax = syntax.replace(argument.getString("name"), argument.getBoolean("required") ? "<" + argument.getString("name") + ">" : "[" + argument
+                        .getString("name") + "]");
+            });
+            base.append("---------Command Details---------\n");
+            base.append("NAME: " + getPageName() + "\n");
+            base.append("SYNTAX: " + getUsage() + "\n");
+            base.append("DESCRIPTION: " + dataJsonObject.getString("description"));
+            return base.toString();
+        }
+
+        if (index < arguments_end) {
+            StringBuilder base = new StringBuilder();
+            JSONObject argument = (JSONObject) dataJsonObject.getJSONArray("arguments").get(index - 1);
+            base.append("---------Command argument Details: " + dataJsonObject.getString("syntax")
+                    .replace(argument.getString("name"), "__[" + argument.getString("name") + "]__")).append("---------");
+            base.append("\nNAME: " + argument.getString("name"));
+            base.append("\nDESCRIPTION: " + argument.getString("description"));
+            base.append("\nREQUIRED: " + argument.getBoolean("required"));
+            base.append("TYPE: " + argument.getString("type"));
+            return base.toString();
+        }
+        if (index > arguments_end) {
+            //TODO: Implement related commands
+            //TODO: Add aliases
+        }
+        return "error";
+    }
 
     @Override
     public int getNumRequiredArgs() {
         int num = 0;
-         JSONArray arr= dataJsonObject.getJSONArray("arguments");
-        for(int i =0; i<arr.length()-1; i++){
-            JSONObject ob = (JSONObject) arr.getJSONObject(i);
+        JSONArray arr = dataJsonObject.getJSONArray("arguments");
+        for (int i = 0; i < arr.length(); i++) {
+            JSONObject ob = arr.getJSONObject(i);
             if(ob.getBoolean("required")){
                 num++;
             }
         }
         return num;
     }
-
     @Override
     public ManualPageEmbed displayNewEmbed(TextChannel scope,int startPage) {
         ManualPageEmbed manualPageEmbed = new ManualPageEmbed(this, scope,startPage);
@@ -154,7 +191,6 @@ public class ImplCommandUsageManual implements CommandUsageManual {
         messageList.add(manualPageEmbed);
         return manualPageEmbed;
     }
-
     @Override
     public int getTotalNumberPages() {
         int start = 1;

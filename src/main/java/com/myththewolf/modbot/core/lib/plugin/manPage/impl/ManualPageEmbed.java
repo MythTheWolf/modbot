@@ -58,6 +58,7 @@ public class ManualPageEmbed {
 
     private Reaction GO_FORWARD_REACTIOn;
 
+    private Reaction GO_HOME_REACTION;
     /**
      * Constructs a ManualPageEmbed
      *
@@ -94,6 +95,7 @@ public class ManualPageEmbed {
             this.message.addReaction("◀").exceptionally(ExceptionLogger.get());
             this.message.addReaction("❌").exceptionally(ExceptionLogger.get());
             this.message.addReaction("▶").exceptionally(ExceptionLogger.get());
+            this.message.addReaction("\uD83C\uDFE0").exceptionally(ExceptionLogger.get());
         }).exceptionally(ExceptionLogger.get());
 
     }
