@@ -147,7 +147,7 @@ public class ImplCommandUsageManual implements CommandUsageManual {
                 syntax = syntax.replace(argument.getString("name"), argument.getBoolean("required") ? "<" + argument.getString("name") + ">" : "[" + argument
                         .getString("name") + "]");
             });
-            base.append("---------Command Details---------\n");
+            base.append("\n---------Command Details---------\n");
             base.append("NAME: " + getPageName() + "\n");
             base.append("SYNTAX: " + getUsage() + "\n");
             base.append("DESCRIPTION: " + dataJsonObject.getString("description"));
@@ -157,19 +157,21 @@ public class ImplCommandUsageManual implements CommandUsageManual {
         if (index < arguments_end) {
             StringBuilder base = new StringBuilder();
             JSONObject argument = (JSONObject) dataJsonObject.getJSONArray("arguments").get(index - 1);
-            base.append("---------Command argument Details: " + dataJsonObject.getString("syntax")
-                    .replace(argument.getString("name"), "__[" + argument.getString("name") + "]__")).append("---------");
-            base.append("\nNAME: " + argument.getString("name"));
-            base.append("\nDESCRIPTION: " + argument.getString("description"));
-            base.append("\nREQUIRED: " + argument.getBoolean("required"));
-            base.append("TYPE: " + argument.getString("type"));
+            String header = "\n\u001b[32m---------Command argument Details: " + dataJsonObject.getString("syntax")
+                    .replace(argument.getString("name"), "[" + argument.getString("name") + "]") + "---------";
+            base.append(header);
+            base.append("\n\u001b[35mNAME:\u001b[36m " + argument.getString("name"));
+            base.append("\n\u001b[35mDESCRIPTION:\u001b[36m " + argument.getString("description"));
+            base.append("\n\u001b[35mREQUIRED:\u001b[36m " + argument.getBoolean("required"));
+            base.append("\n\u001b[35mTYPE:\u001b[36m " + argument.getString("type") + "\u001b[0m");
+            base.append(header.replaceAll(".", "\u001b[32m-") + "\u001b[0m");
             return base.toString();
         }
         if (index > arguments_end) {
             //TODO: Implement related commands
             //TODO: Add aliases
         }
-        return "error";
+        return "\u001b[31mNo such page found\u001b[0m";
     }
 
     @Override

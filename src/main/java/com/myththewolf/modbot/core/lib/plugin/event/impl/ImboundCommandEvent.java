@@ -9,6 +9,7 @@ import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 import org.javacord.api.util.logging.ExceptionLogger;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 public class ImboundCommandEvent implements BotEvent {
@@ -45,6 +46,19 @@ public class ImboundCommandEvent implements BotEvent {
     public void cancelEvent() {
         cancel = true;
         source.delete().exceptionally(ExceptionLogger.get());
+    }
+
+    public DiscordCommand getCommand() {
+        return command;
+    }
+
+    public Message getSource() {
+        return source;
+    }
+
+    public String[] getArgs() {
+        String source = getSource().getContent();
+        return Arrays.copyOfRange(source.split(" "), 1, source.split(" ").length);
     }
 
     @Override

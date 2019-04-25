@@ -116,6 +116,7 @@ public class DiscordCommand {
                     badType = usage[x];
                     badSupp = args[x];
                     badIndex++;
+
                     switch (type) {
                         case STRING:
                             typesOk = true;
@@ -144,6 +145,13 @@ public class DiscordCommand {
                         case ROLE_NAME:
                             typesOk = channel.getApi().getRolesByName(args[x]).size() > 0;
                             break;
+                        case PLUGIN:
+                            final String name = args[x];
+                            typesOk = getParentPlugin().getPluginManager().getPlugins().stream().map(BotPlugin::getPluginName).anyMatch(s -> s.equals(name));
+                            break;
+                        case CONSTANT:
+                            typesOk = Util.jsonArray_Contains(arg.getJSONArray("values"), args[x]);
+                            break;
                         default:
                             typesOk = false;
                             break;
@@ -158,8 +166,12 @@ public class DiscordCommand {
                     builder.setDescription(Util.wrapInCodeBlock("One of your argument types is wrong!"));
                     builder.addField("COMMAND USAGE:", Util.wrapInCodeBlock(manual.getUsage()), false);
                     JSONObject argRef = mapObjectByName(badType, manual.getDataJsonObject().getJSONArray("arguments"));
-                    builder.addField("EXPECTED ARGUEMENT TYPE: ", Util.wrapInCodeBlock(argRef.getString("type")), false);
-                    builder.addField("GOT: ", Util.wrapInCodeBlock(badSupp), false);
+                    if (ArgumentType.valueOf(argRef.getString("type")).equals(ArgumentType.CONSTANT)) {
+                        builder.addField("The supplied value '" + badSupp + "' is not a accecptable value for that argument, the possible choices are: ", Util.wrapInCodeBlock(argRef.getJSONArray("values").toString()), false);
+                    } else {
+                        builder.addField("EXPECTED ARGUMENT TYPE: ", Util.wrapInCodeBlock(badSupp), false);
+                        builder.addField("GOT: ", badSupp, false);
+                    }
                     builder.setThumbnail(user.getAvatar());
                     builder.setFooter("See " + MyriadBotLoader.COMMAND_KEY + "mb.man " + manual.getPageName() + " " + (badIndex) + "");
                     channel.sendMessage(builder).exceptionally(ExceptionLogger.get());
@@ -222,6 +234,13 @@ public class DiscordCommand {
                         break;
                     case ROLE_NAME:
                         typesOk = getParentPlugin().getDiscordAPI().getRolesByName(args[x]).size() > 0;
+                        break;
+                    case PLUGIN:
+                        final String name = args[x];
+                        typesOk = getParentPlugin().getPluginManager().getPlugins().stream().map(BotPlugin::getPluginName).anyMatch(s -> s.equals(name));
+                        break;
+                    case CONSTANT:
+                        typesOk = Util.jsonArray_Contains(arg.getJSONArray("values"), args[x]);
                         break;
                     default:
                         typesOk = true;
