@@ -23,6 +23,7 @@ import com.myththewolf.modbot.core.lib.plugin.event.interfaces.EventHandler;
 import com.myththewolf.modbot.core.lib.plugin.manager.impl.BotPlugin;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageAuthor;
+import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -212,6 +213,13 @@ public class Util {
         return event.isCancelled();
     }
 
+    public static boolean jsonArray_Contains(JSONArray needle, Object haystack) {
+        for (Object I : needle) {
+            if (I.equals(haystack))
+                return true;
+        }
+        return false;
+    }
     private static BotPlugin runnerToBotPlugin(Object runner) {
         return MyriadBotLoader.PM.getPlugins().stream().filter((BotPlugin plugin) -> plugin.getEvents().stream()
                 .anyMatch(o -> o.getClass().getName().equals(runner.getClass().getName())))
