@@ -53,9 +53,13 @@ public class CommandListener implements MessageCreateListener, Loggable {
     public CommandListener(PluginManager manager) {
         this.manager = manager;
     }
+
     boolean isSystemCommand;
+
     @Override
     public void onMessageCreate(MessageCreateEvent messageCreateEvent) {
+        getLogger().info("event!!!");
+        manager.getPlugins().stream().map(BotPlugin::getCommands).flatMap(List::stream).forEach(discordCommand -> getLogger().info(discordCommand.getTrigger()));
         if (!messageCreateEvent.getMessage().getContent().startsWith(MyriadBotLoader.COMMAND_KEY)) {
             return;
         }
@@ -66,14 +70,14 @@ public class CommandListener implements MessageCreateListener, Loggable {
         String[] content = message.getContent().split(" ");
         content[0] = content[0].substring(MyriadBotLoader.COMMAND_KEY.length());
 
-
         manager.getPlugins().stream().map(BotPlugin::getCommands).flatMap(List::stream)
                 .filter((DiscordCommand cmd) -> (cmd.getTrigger().equals(content[0]) || content[0]
                         .equals(cmd.getParentPlugin().getPluginName() + ":" + cmd.getTrigger()))
                 ).forEachOrdered(discordCommand -> {
-            ImboundCommandEvent commandEvent = new ImboundCommandEvent(message,discordCommand,messageCreateEvent.getMessage().getUserAuthor().get());
-
+            ImboundCommandEvent commandEvent = new ImboundCommandEvent(message, discordCommand, messageCreateEvent.getMessage().getUserAuthor().get());
+            getLogger().info("firing event");
             if (!Util.fireEvent(commandEvent)) {
+                getLogger().info("running");
                 discordCommand
                         .invokeCommand(messageCreateEvent.getChannel(), messageCreateEvent.getMessage()
                                 .getAuthor(), messageCreateEvent.getMessage());
@@ -83,7 +87,7 @@ public class CommandListener implements MessageCreateListener, Loggable {
 
 
         if (!isValidCommand) {
-            message.getChannel().sendMessage(content[0]+": Command not found").exceptionally(ExceptionLogger.get());
+            message.getChannel().sendMessage(content[0] + ": Command not found").exceptionally(ExceptionLogger.get());
             return;
         }
     }

@@ -210,6 +210,7 @@ public class Util {
                 }
             }
         });
+        getLogger().info("C: "+event.isCancelled());
         return event.isCancelled();
     }
 
